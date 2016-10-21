@@ -15,7 +15,7 @@ import pt.bamer.bamermachina.ListaOS;
 import pt.bamer.bamermachina.MrApp;
 import pt.bamer.bamermachina.R;
 import pt.bamer.bamermachina.adapters.OSRecyclerAdapter;
-import pt.bamer.bamermachina.database.dbHelper;
+import pt.bamer.bamermachina.database.DBSQLite;
 
 public class AsyncTasks {
     public static class TaskCalcularTempo extends android.os.AsyncTask<Void, Void, Void> {
@@ -81,9 +81,8 @@ public class AsyncTasks {
 
         @Override
         protected Void doInBackground(Void... voids) {
-            qtt = new dbHelper(context).getQtdBostamp(bostamp);
-            qttProd = new dbHelper(context).getQtdProdBostamp(bostamp);
-
+            qtt = new DBSQLite(context).getQtdBostamp(bostamp);
+            qttProd = new DBSQLite(context).getQtdProdBostamp(bostamp);
             return null;
         }
 

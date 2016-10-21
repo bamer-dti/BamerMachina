@@ -3,6 +3,7 @@ package pt.bamer.bamermachina.adapters;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,8 +22,9 @@ import java.util.ArrayList;
 
 import pt.bamer.bamermachina.Dossier;
 import pt.bamer.bamermachina.ListaOS;
+import pt.bamer.bamermachina.MrApp;
 import pt.bamer.bamermachina.R;
-import pt.bamer.bamermachina.database.dbHelper;
+import pt.bamer.bamermachina.database.DBSQLite;
 import pt.bamer.bamermachina.pojos.JSONObjectTimer;
 import pt.bamer.bamermachina.pojos.OSBO;
 import pt.bamer.bamermachina.utils.AsyncTasks;
@@ -35,10 +37,9 @@ public class OSRecyclerAdapter extends RecyclerView.Adapter implements View.OnCl
     private final Context context;
     private ArrayList<OSBO> listaOSBO;
 
-    public OSRecyclerAdapter(Context context, ArrayList<OSBO> listaDocsOSBO) {
+    public OSRecyclerAdapter(Context context) {
         this.context = context;
-        this.listaOSBO = listaDocsOSBO;
-
+        this.listaOSBO = new ArrayList<>();
     }
 
     @Override
@@ -84,7 +85,6 @@ public class OSRecyclerAdapter extends RecyclerView.Adapter implements View.OnCl
         viewHolder.tv_dttransf.setText(dtf.print(localDateTime));
 
         new AsyncTasks.TaskCalculoQtt(bostamp, viewHolder.tv_qtt, viewHolder.tv_qttfeita, viewHolder.ll_root, this, position).execute();
-        viewHolder.tv_qtt.setTag(bostamp);
 
         viewHolder.bt_posicao.setVisibility(View.INVISIBLE);
         new AsyncTasks.TaskCalcularTempo(bostamp, viewHolder.bt_posicao, viewHolder.tv_temporal, ((ListaOS) context).getCronometroOS()).execute();
@@ -140,13 +140,36 @@ public class OSRecyclerAdapter extends RecyclerView.Adapter implements View.OnCl
         return listaOSBO;
     }
 
-    public void updateSourceData(Context context) {
-        this.listaOSBO = new dbHelper(context).getOSBOOrdered();
-
+    public void updateSourceData() {
         ((ListaOS) context).runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                ArrayList<OSBO> lista = new DBSQLite(context).getOSBOOrdered();
+                SharedPreferences prefs = MrApp.getPrefs();
+                boolean mostrarTodos = prefs.getBoolean(Constantes.PREF_MOSTRAR_OS_COMPLETOS, true);
+                Log.i(TAG, "mostrarTodos = " + mostrarTodos);
+                if (mostrarTodos) {
+                    listaOSBO = lista;
+                } else {
+                    for (OSBO osbo : lista) {
+                        String bostamp = osbo.bostamp;
+                        int qtt = new DBSQLite(context).getQtdBostamp(bostamp);
+                        int qttProd = new DBSQLite(context).getQtdProdBostamp(bostamp);
+                        if (qtt != qttProd) {
+                            listaOSBO.add(osbo);
+                        }
+                    }
+                }
                 notifyDataSetChanged();
+            }
+        });
+    }
+
+    public void notificar(ListaOS contextActivity, final int i) {
+        contextActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                notifyItemChanged(i);
             }
         });
     }

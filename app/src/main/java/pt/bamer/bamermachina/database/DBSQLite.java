@@ -13,8 +13,8 @@ import pt.bamer.bamermachina.pojos.OSBI;
 import pt.bamer.bamermachina.pojos.OSBO;
 import pt.bamer.bamermachina.pojos.OSPROD;
 
-public class dbHelper extends SQLiteOpenHelper {
-    private static final String TAG = dbHelper.class.getSimpleName();
+public class DBSQLite extends SQLiteOpenHelper {
+    private static final String TAG = DBSQLite.class.getSimpleName();
     private static final String DATABASE_NAME = "opsec";
     private static final int DATABASE_VERSION = 2;
 
@@ -85,7 +85,7 @@ public class dbHelper extends SQLiteOpenHelper {
             + BISTAMP + " text not null "
             + ")";
 
-    public dbHelper(Context context) {
+    public DBSQLite(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
@@ -228,6 +228,30 @@ public class dbHelper extends SQLiteOpenHelper {
                 osbo.seccao = cursor.getString(cursor.getColumnIndex(SECCAO));
                 lista.add(osbo);
             } while (cursor.moveToNext());
+        }
+        cursor.close();
+        db.close();
+        return lista;
+    }
+
+    public ArrayList<OSPROD> getProdAgrupadaPorBostamp() {
+        ArrayList<OSPROD> lista = new ArrayList<>();
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.query(TABELA_OSPROD,
+                new String[]{BOSTAMP, "SUM(" + QTT + ") as " + QTT},
+                "",
+                null,
+                BOSTAMP
+                , ""
+                , ""
+        );
+        if(cursor.moveToFirst()){
+            do {
+                OSPROD osprod = new OSPROD();
+                osprod.bostamp = cursor.getString(cursor.getColumnIndex(BOSTAMP));
+                osprod.qtt = cursor.getInt(cursor.getColumnIndex(QTT));
+                lista.add(osprod);
+            }while (cursor.moveToNext());
         }
         cursor.close();
         db.close();

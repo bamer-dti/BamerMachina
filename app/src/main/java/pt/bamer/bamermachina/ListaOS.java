@@ -34,7 +34,7 @@ import java.util.Timer;
 
 import fr.castorflex.android.smoothprogressbar.SmoothProgressBar;
 import pt.bamer.bamermachina.adapters.OSRecyclerAdapter;
-import pt.bamer.bamermachina.database.dbHelper;
+import pt.bamer.bamermachina.database.DBSQLite;
 import pt.bamer.bamermachina.pojos.JSONObjectQtd;
 import pt.bamer.bamermachina.pojos.JSONObjectTimer;
 import pt.bamer.bamermachina.pojos.OSBI;
@@ -45,22 +45,26 @@ import pt.bamer.bamermachina.utils.Funcoes;
 import pt.bamer.bamermachina.webservices.WebServices;
 
 public class ListaOS extends AppCompatActivity {
-    private ListaOS activityListaOS = this;
     private static String TAG = ListaOS.class.getSimpleName();
+    public Timer cronometroOS;
+    private ListaOS activityListaOS = this;
     private LinearLayout ll_working_os;
     private TextView tv_os;
     private TextView tv_tempo_total;
     private TextView tv_tempo_parcial;
     private TextView tv_qtt_total;
     private TextView bt_qtt_feita;
-    private OSBO keyBaseStarted;
-    public Timer cronometroOS;
-    private ListaOS activityContext = this;
+    private OSBO objectoOSBOIniciado;
+    private ListaOS contextActivity = this;
     private RecyclerView recyclerView;
     private Menu menu;
     private SmoothProgressBar pb_smooth;
     private OSBO documentoEmTrabalho;
     private OSRecyclerAdapter osRecyclerAdapter;
+
+    public static int getPosicao(String bostamp) {
+        return Constantes.MODO_STARTED;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +80,8 @@ public class ListaOS extends AppCompatActivity {
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         LinearLayoutManager recyclerViewLayoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(recyclerViewLayoutManager);
+        osRecyclerAdapter = new OSRecyclerAdapter(contextActivity);
+        recyclerView.setAdapter(osRecyclerAdapter);
 
         ll_working_os = (LinearLayout) findViewById(R.id.ll_working_os);
         ll_working_os.setVisibility(View.GONE);
@@ -92,12 +98,12 @@ public class ListaOS extends AppCompatActivity {
         ll_working_os.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (keyBaseStarted == null) {
+                if (objectoOSBOIniciado == null) {
                     Funcoes.alerta(activityListaOS, "Erro", "O servidor está ocupado. Tente dentro de momentos");
                     return;
                 }
                 Intent intent = new Intent(view.getContext(), Dossier.class);
-                intent.putExtra(Constantes.INTENT_EXTRA_BOSTAMP, keyBaseStarted.bostamp);
+                intent.putExtra(Constantes.INTENT_EXTRA_BOSTAMP, objectoOSBOIniciado.bostamp);
                 intent.putExtra(Constantes.INTENT_EXTRA_MODO_OPERACIONAL, Constantes.MODO_STARTED);
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
@@ -149,8 +155,8 @@ public class ListaOS extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 try {
-                    JSONObjectTimer jsonObject = new JSONObjectTimer(keyBaseStarted.bostamp, "", Constantes.ESTADO_CORTE, 2, -1);
-                    WebServices.registarTempoemSQL(activityContext, jsonObject);
+                    JSONObjectTimer jsonObject = new JSONObjectTimer(objectoOSBOIniciado.bostamp, "", Constantes.ESTADO_CORTE, 2, -1);
+                    WebServices.registarTempoemSQL(contextActivity, jsonObject);
                     ll_working_os.setVisibility(View.GONE);
                     pararCronometro();
                 } catch (JSONException e) {
@@ -159,7 +165,48 @@ public class ListaOS extends AppCompatActivity {
             }
         });
 
-        fazerRecyclerViewOSBO(this);
+        FirebaseDatabase databaseref = FirebaseDatabase.getInstance();
+        DatabaseReference refFirebaseOSBO = databaseref.getReference().child(Constantes.NODE_OSBO);
+        ValueEventListener listenerFirebaseOSBO = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                new TaskFirebaseOSBO(dataSnapshot).execute();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+        refFirebaseOSBO.addValueEventListener(listenerFirebaseOSBO);
+
+        DatabaseReference refFirebaseOSBI = databaseref.getReference(Constantes.NODE_OSBI);
+        ValueEventListener listenerFirebaseOSBI = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                new TaskFirebaseOSBI(dataSnapshot).execute();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+        refFirebaseOSBI.addValueEventListener(listenerFirebaseOSBI);
+
+        DatabaseReference refFirebaseOSPROD = databaseref.getReference().child("osprod");
+        ValueEventListener listenerFirebase = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                new TaskFirebaseOSPROD(dataSnapshot).execute();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+        refFirebaseOSPROD.addValueEventListener(listenerFirebase);
     }
 
     @Override
@@ -217,31 +264,11 @@ public class ListaOS extends AppCompatActivity {
             String design = "Qtd Avulso";
             String bostamp = documentoEmTrabalho.bostamp;
             JSONObjectQtd jsonObjectQtd = new JSONObjectQtd(bostamp, dim, mk, ref, design, qtd);
-            WebServices.registarQtdEmSQL(activityContext, bt_qtt_feita, qtd_anterior, qtd, jsonObjectQtd);
+            WebServices.registarQtdEmSQL(contextActivity, bt_qtt_feita, qtd_anterior, qtd, jsonObjectQtd);
         } catch (JSONException e) {
             e.printStackTrace();
-            Funcoes.alerta(activityContext, "ERRO", "Erro ao construir o objecto JSON.\nListaOS - método emitirQtdProduzidaPorAvulso");
+            Funcoes.alerta(contextActivity, "ERRO", "Erro ao construir o objecto JSON.\nListaOS - método emitirQtdProduzidaPorAvulso");
         }
-    }
-
-    private void fazerRecyclerViewOSBO(Context context) {
-        FirebaseDatabase databaseref = FirebaseDatabase.getInstance();
-        DatabaseReference ref = databaseref.getReference();
-        ValueEventListener listenerFirebase = new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                new TaskFirebase(dataSnapshot).execute();
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        };
-
-        osRecyclerAdapter = new OSRecyclerAdapter(context, new ArrayList<OSBO>());
-        recyclerView.setAdapter(osRecyclerAdapter);
-        ref.addValueEventListener(listenerFirebase);
     }
 
     private void iniciarTemposOSAposReplicacao(String bostamp) {
@@ -261,84 +288,60 @@ public class ListaOS extends AppCompatActivity {
         SharedPreferences prefs = MrApp.getPrefs();
         boolean vis = prefs.getBoolean(Constantes.PREF_MOSTRAR_OS_COMPLETOS, true);
         menu.findItem(R.id.itemmenu_mostrar_tudo).setTitle(vis ? Constantes.MOSTRAR_TUDO : Constantes.MOSTRAR_FILTRADO);
-        new aplicarAdapter().execute();
+        osRecyclerAdapter.updateSourceData();
     }
 
     public Timer getCronometroOS() {
         return null;
     }
 
-    private class aplicarAdapter extends AsyncTask<Void, Void, Void> {
-        private boolean vis;
+    private class TaskFirebaseOSBO extends AsyncTask<Void, Void, Void> {
+        private final ArrayList<OSBO> listaOSBO;
+        private final DataSnapshot dataSnapShot;
+        private boolean changed;
 
-        private ArrayList<OSBO> listaDeOs;
+        public TaskFirebaseOSBO(DataSnapshot dataSnapshot) {
+            this.listaOSBO = new ArrayList<>();
+            this.dataSnapShot = dataSnapshot;
+        }
 
         @Override
         protected void onPreExecute() {
-            SharedPreferences prefs = MrApp.getPrefs();
-            vis = prefs.getBoolean(Constantes.PREF_MOSTRAR_OS_COMPLETOS, true);
-            MrApp.mostrarAlertToWait(activityContext, "A organizar dados...");
+            pb_smooth.setVisibility(View.VISIBLE);
+            Log.i(TAG, "Secção " + MrApp.getSeccao() + ", estado " + MrApp.getEstado());
         }
 
         @Override
         protected Void doInBackground(Void... voids) {
-            listaDeOs = new ArrayList<>();
-            if (listaDeOs.size() != 0) {
-                for (int i = 0; i < listaDeOs.size(); i++) {
-                    OSBO osbo = listaDeOs.get(i);
-                    @SuppressWarnings("unchecked")
-                    String bostamp = osbo.bostamp;
+            for (DataSnapshot snapshotOSBO : dataSnapShot.getChildren()) {
+                String bostamp = snapshotOSBO.getKey();
+                OSBO osbo = snapshotOSBO.getValue(OSBO.class);
+                osbo.bostamp = bostamp;
+                if (osbo.seccao.equals(MrApp.getSeccao())
+                        && osbo.estado.equals(MrApp.getEstado())) {
+                    listaOSBO.add(osbo);
 
-                    //Está em modo started?
-                    if (getPosicao(bostamp) == Constantes.MODO_STARTED) {
-                        iniciarTemposOSAposReplicacao(bostamp);
-                        keyBaseStarted = osbo;
-                    } else {
-                        if (vis) {
-                            listaDeOs.add(osbo);
-                        } else {
-                            int qttProd = 0;
-                            int qttPed = 0;
-                            if (qttProd != qttPed) {
-                                listaDeOs.add(osbo);
-                            }
-                        }
-                    }
                 }
             }
+            Log.i(TAG, "listaOSBO: " + listaOSBO.size());
+
+            new DBSQLite(contextActivity).gravarOSBO(listaOSBO);
             return null;
         }
 
         @Override
         protected void onPostExecute(Void aVoid) {
-            Log.i(TAG, "A mostrar o OSRecyclerAdapter...");
-            final OSRecyclerAdapter adapter = new OSRecyclerAdapter(activityListaOS, listaDeOs);
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    recyclerView.setAdapter(adapter);
-                }
-            });
-            MrApp.esconderAlertToWait(activityListaOS);
+            osRecyclerAdapter.updateSourceData();
+            pb_smooth.setVisibility(View.INVISIBLE);
         }
     }
 
-    public static int getPosicao(String bostamp) {
-        return Constantes.MODO_STOPED;
-    }
-
-    private class TaskFirebase extends AsyncTask<Void, Void, Void> {
-        private final ArrayList<OSBO> listaOSBO;
+    private class TaskFirebaseOSBI extends AsyncTask<Void, Void, Void> {
         private final ArrayList<OSBI> listaOSBI;
-        private final ArrayList<OSPROD> listaOSPROD;
         private final DataSnapshot dataSnapShot;
-        private final ArrayList<OSBO> listaInspeccao;
 
-        public TaskFirebase(DataSnapshot dataSnapshot) {
-            this.listaOSBO = new ArrayList<>();
+        public TaskFirebaseOSBI(DataSnapshot dataSnapshot) {
             this.listaOSBI = new ArrayList<>();
-            this.listaOSPROD = new ArrayList<>();
-            this.listaInspeccao = new ArrayList<>();
             this.dataSnapShot = dataSnapshot;
         }
 
@@ -351,57 +354,63 @@ public class ListaOS extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... voids) {
             for (DataSnapshot snap : dataSnapShot.getChildren()) {
-                Log.i(TAG, "SNAP KEY: " + snap.getKey());
-                if (snap.getKey().equals(Constantes.NODE_OSBO)) {
-                    for (DataSnapshot snapshotOSBO : snap.getChildren()) {
-                        String bostamp = snapshotOSBO.getKey();
-                        OSBO osbo = snapshotOSBO.getValue(OSBO.class);
-                        osbo.bostamp = bostamp;
-                        if (osbo.seccao.equals(MrApp.getSeccao())
-                                && osbo.estado.equals(MrApp.getEstado())) {
-                            listaOSBO.add(osbo);
-                        }
-                    }
-                }
-                if (snap.getKey().equals(Constantes.NODE_OSBI)) {
-                    for (DataSnapshot snapshotOSBO : snap.getChildren()) {
-                        String bostamp = snapshotOSBO.getKey();
-                        for (DataSnapshot dataSnapshotOSBI : snapshotOSBO.getChildren()) {
-                            OSBI osbi = dataSnapshotOSBI.getValue(OSBI.class);
-                            osbi.bostamp = bostamp;
-                            osbi.bistamp = dataSnapshotOSBI.getKey();
-                            listaOSBI.add(osbi);
-                        }
-                    }
-                }
-
-                if (snap.getKey().equals(Constantes.NODE_OSPROD)) {
-                    for (DataSnapshot snapshotOSPROD : snap.getChildren()) {
-                        String bostamp = snapshotOSPROD.getKey();
-                        for (DataSnapshot dataSnapshotOSPROD : snapshotOSPROD.getChildren()) {
-                            OSPROD osprod = dataSnapshotOSPROD.getValue(OSPROD.class);
-                            osprod.bostamp = bostamp;
-                            osprod.bistamp = dataSnapshotOSPROD.getKey();
-                            listaOSPROD.add(osprod);
-                        }
-                    }
+                String bostamp = snap.getKey();
+                for (DataSnapshot dataSnapshotOSBI : snap.getChildren()) {
+                    OSBI osbi = dataSnapshotOSBI.getValue(OSBI.class);
+                    osbi.bostamp = bostamp;
+                    osbi.bistamp = dataSnapshotOSBI.getKey();
+//                    Log.i(TAG, "bostamp = " + osbi.bostamp + ", bistamp = " + osbi.bistamp);
+                    listaOSBI.add(osbi);
                 }
             }
-            Log.i(TAG, "listaOSBO: " + listaOSBO.size() + ", listaOSBI: " + listaOSBI.size() + ", lista OSPROD: " + listaOSPROD.size());
-
-            new dbHelper(activityContext).gravarOSBO(listaOSBO);
-            new dbHelper(activityContext).gravarOSBI(listaOSBI);
-            new dbHelper(activityContext).gravarOSPROD(listaOSPROD);
-
+            Log.i(TAG, "listaOSBI: " + listaOSBI.size());
+            new DBSQLite(contextActivity).gravarOSBI(listaOSBI);
             return null;
         }
 
         @Override
         protected void onPostExecute(Void aVoid) {
-
-            osRecyclerAdapter.updateSourceData(activityContext);
-
+            osRecyclerAdapter.updateSourceData();
             pb_smooth.setVisibility(View.INVISIBLE);
         }
     }
+
+    private class TaskFirebaseOSPROD extends AsyncTask<Void, Void, Void> {
+        private final DataSnapshot snap;
+        private final ArrayList<OSPROD> listaOSPROD;
+
+        public TaskFirebaseOSPROD(DataSnapshot dataSnapshot) {
+            this.snap = dataSnapshot;
+            this.listaOSPROD = new ArrayList<>();
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            for (DataSnapshot snapshotOSPROD : snap.getChildren()) {
+                String bostamp = snapshotOSPROD.getKey();
+                for (DataSnapshot dataSnapshotOSPROD : snapshotOSPROD.getChildren()) {
+                    OSPROD osprod = dataSnapshotOSPROD.getValue(OSPROD.class);
+                    osprod.bostamp = bostamp;
+                    osprod.bistamp = dataSnapshotOSPROD.getKey();
+                    listaOSPROD.add(osprod);
+                    Log.i(TAG, "osbostamp:  " + osprod.bostamp + ", bistamp = " + osprod.bistamp + ", qtt = " + osprod.qtt);
+                }
+            }
+            Log.i(TAG, "listaOSPROD: " + listaOSPROD.size());
+            new DBSQLite(contextActivity).gravarOSPROD(listaOSPROD);
+
+            ArrayList<OSPROD> listaProd = new DBSQLite(contextActivity).getProdAgrupadaPorBostamp();
+            ArrayList<OSBO> listaOSBO = osRecyclerAdapter.getListaOSBO();
+            for (OSPROD osprod : listaProd) {
+                for (int i = 0; i < listaOSBO.size(); i++) {
+                    OSBO osbo = listaOSBO.get(i);
+                    if (osprod.bostamp.equals(osbo.bostamp)) {
+                        osRecyclerAdapter.notificar(contextActivity, i);
+                    }
+                }
+            }
+            return null;
+        }
+    }
+
 }

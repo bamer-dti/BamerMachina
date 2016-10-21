@@ -22,7 +22,6 @@ import fr.castorflex.android.smoothprogressbar.SmoothProgressBar;
 import pt.bamer.bamermachina.adapters.OSRecyclerAdapter;
 import pt.bamer.bamermachina.adapters.TarefaRecyclerAdapter;
 import pt.bamer.bamermachina.pojos.OSBI;
-import pt.bamer.bamermachina.pojos.OSBO;
 import pt.bamer.bamermachina.utils.Constantes;
 
 ///**
@@ -71,46 +70,9 @@ public class Dossier extends AppCompatActivity {
             modoOperacional = extras.getInt(Constantes.INTENT_EXTRA_MODO_OPERACIONAL);
         }
 
-        RecyclerView.Adapter adapter = new OSRecyclerAdapter(this, new ArrayList<OSBO>());
+        RecyclerView.Adapter adapter = new OSRecyclerAdapter(this);
         recyclerView.setAdapter(adapter);
         MrApp.esconderAlertToWait(activity);
-    }
-
-
-    private class efectuarAdapter extends AsyncTask<Void, Void, Void> {
-
-        private boolean vertudo;
-        private List<OSBI> listaOSBI;
-
-        efectuarAdapter(ArrayList<OSBI> listaOSBI) {
-            this.listaOSBI = listaOSBI;
-        }
-
-        @Override
-        protected void onPreExecute() {
-            SharedPreferences prefs = MrApp.getPrefs();
-            vertudo = prefs.getBoolean(Constantes.PREF_MOSTRAR_TODAS_LINHAS_PROD, true);
-            MrApp.mostrarAlertToWait(activity, "A organizar dados...");
-        }
-
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            final TarefaRecyclerAdapter tarefaRecyclerAdapter = new TarefaRecyclerAdapter(activity, listaOSBI, modoOperacional);
-            runOnUiThread(new Runnable() {
-                              @Override
-                              public void run() {
-                                  recyclerView.setAdapter(tarefaRecyclerAdapter);
-                              }
-                          }
-            );
-            MrApp.esconderAlertToWait(activity);
-        }
     }
 
     @Override
@@ -163,5 +125,41 @@ public class Dossier extends AppCompatActivity {
         SharedPreferences prefs = MrApp.getPrefs();
         boolean vis = prefs.getBoolean(Constantes.PREF_MOSTRAR_TODAS_LINHAS_PROD, true);
         menu.findItem(R.id.itemmenu_mostrar_tudo).setTitle(vis ? Constantes.MOSTRAR_TUDO : Constantes.MOSTRAR_FILTRADO);
+    }
+
+    private class efectuarAdapter extends AsyncTask<Void, Void, Void> {
+
+        private boolean vertudo;
+        private List<OSBI> listaOSBI;
+
+        efectuarAdapter(ArrayList<OSBI> listaOSBI) {
+            this.listaOSBI = listaOSBI;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            SharedPreferences prefs = MrApp.getPrefs();
+            vertudo = prefs.getBoolean(Constantes.PREF_MOSTRAR_TODAS_LINHAS_PROD, true);
+            MrApp.mostrarAlertToWait(activity, "A organizar dados...");
+        }
+
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            final TarefaRecyclerAdapter tarefaRecyclerAdapter = new TarefaRecyclerAdapter(activity, listaOSBI, modoOperacional);
+            runOnUiThread(new Runnable() {
+                              @Override
+                              public void run() {
+                                  recyclerView.setAdapter(tarefaRecyclerAdapter);
+                              }
+                          }
+            );
+            MrApp.esconderAlertToWait(activity);
+        }
     }
 }
