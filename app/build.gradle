@@ -49,6 +49,8 @@ dependencies {
     compile 'com.github.castorflex.smoothprogressbar:library:1.1.0'
 
     compile 'com.yqritc:recyclerview-flexibledivider:1.4.0'
+//    http://square.github.io/okhttp/
+    compile 'com.squareup.okhttp3:okhttp:3.4.1'
 }
 
 apply plugin: 'com.google.gms.google-services'

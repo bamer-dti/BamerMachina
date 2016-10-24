@@ -2,6 +2,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="pt.bamer.bamermachina">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:name="MrApp"
         android:allowBackup="true"
