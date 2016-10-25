@@ -64,7 +64,7 @@ public class Entrada extends AppCompatActivity {
             public void onClick(View view) {
                 MrApp.setMaquina(spinner_maquina.getSelectedItem().toString());
                 MrApp.setOperador(spinner_funcionario.getSelectedItem().toString());
-                Intent intent = new Intent(view.getContext(), ListaOS.class);
+                Intent intent = new Intent(view.getContext(), ActivityListaOS.class);
                 startActivity(intent);
             }
         });

@@ -1,5 +1,6 @@
 package pt.bamer.bamermachina.utils;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -11,7 +12,7 @@ import android.widget.TextView;
 
 import java.util.Timer;
 
-import pt.bamer.bamermachina.ListaOS;
+import pt.bamer.bamermachina.ActivityListaOS;
 import pt.bamer.bamermachina.MrApp;
 import pt.bamer.bamermachina.R;
 import pt.bamer.bamermachina.adapters.OSRecyclerAdapter;
@@ -24,20 +25,29 @@ public class AsyncTasks {
         private final String bostamp;
         private final TextView tv_temporal;
         private final Timer timer;
+        private final Context context;
+        private final Button bt_alertas;
         private long tempoCalculado;
         private int posicaoSQL = 0;
 
-        public TaskCalcularTempo(String bostamp, Button bt_posicao, TextView tv_temporal, Timer timer) {
+        public TaskCalcularTempo(String bostamp, OSRecyclerAdapter.ViewHolder viewHolder, Activity activity) {
             this.bostamp = bostamp;
-            this.bt_posicao = bt_posicao;
-            this.tv_temporal = tv_temporal;
-            this.timer = timer;
+            this.bt_posicao = viewHolder.getBt_posicao();
+            this.bt_alertas = viewHolder.getBt_alertas();
+            this.tv_temporal = viewHolder.getTv_temporal();
+            ActivityListaOS oriActivity;
+            if (activity instanceof ActivityListaOS)
+                oriActivity = (ActivityListaOS) activity;
+            else
+                oriActivity = null;
+            this.timer = oriActivity == null ? null : oriActivity.getBancadaTrabalho().getCronometroOS();
+            this.context = activity;
         }
 
         @Override
         protected Void doInBackground(Void... voids) {
-            posicaoSQL = ListaOS.getPosicao(bostamp);
-            tempoCalculado = 0;
+            posicaoSQL = new DBSQLite(context).getOSTimerPosicao(bostamp);
+            tempoCalculado = new DBSQLite(context).getTotalTempoBostamp(bostamp);
             return null;
         }
 
@@ -45,9 +55,11 @@ public class AsyncTasks {
         protected void onPostExecute(Void aVoid) {
             if (timer == null) {
                 bt_posicao.setVisibility(View.VISIBLE);
+                bt_alertas.setVisibility(View.VISIBLE);
 
             } else {
                 bt_posicao.setVisibility(View.INVISIBLE);
+                bt_alertas.setVisibility(View.INVISIBLE);
             }
             String texto = bt_posicao.getContext().getString(R.string.iniciar_upper);
             texto = posicaoSQL == Constantes.MODO_STOPED ? bt_posicao.getContext().getString(R.string.continuar_upper) : texto;

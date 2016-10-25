@@ -9,18 +9,20 @@ import android.util.Log;
 
 import java.util.ArrayList;
 
+import pt.bamer.bamermachina.MrApp;
 import pt.bamer.bamermachina.pojos.OSBI;
 import pt.bamer.bamermachina.pojos.OSBO;
 import pt.bamer.bamermachina.pojos.OSPROD;
+import pt.bamer.bamermachina.pojos.OSTIMER;
 
 public class DBSQLite extends SQLiteOpenHelper {
     private static final String TAG = DBSQLite.class.getSimpleName();
     private static final String DATABASE_NAME = "opsec";
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 4;
 
     private static final String TABELA_OSBO = "osbo";
     private static final String TABELA_OSBI = "osbi";
-
+    private static final String TABELA_OSTIMER = "ostimer";
     private static final String COLID = "_id";
     private static final String BOSTAMP = "bostamp";
     private static final String BISTAMP = "bistamp";
@@ -31,7 +33,6 @@ public class DBSQLite extends SQLiteOpenHelper {
     private static final String MK = "mk";
     private static final String REF = "ref";
     private static final String TIPO = "tipo";
-
     private static final String COR = "cor";
     private static final String DTCLIENTE = "dtcliente";
     private static final String DTCORTEF = "dtcortef";
@@ -44,8 +45,12 @@ public class DBSQLite extends SQLiteOpenHelper {
     private static final String OBRANO = "obrano";
     private static final String OBS = "osb";
     private static final String ORDEM = "ordem";
+    private static final String LASTTIME = "lasttime";
+    private static final String POSICAO = "posicao";
+    private static final String UNIXTIME = "unixtime";
+    private static final String MAQUINA = "maquina";
+    private static final String OPERADOR = "operador";
     private static final String SECCAO = "seccao";
-
     private static final String DATABASE_CREATE_TABLE_OSBO = "Create Table " + TABELA_OSBO + "("
             + COLID + " integer primary key autoincrement, "
             + COR + " integer not null, "
@@ -63,7 +68,6 @@ public class DBSQLite extends SQLiteOpenHelper {
             + ORDEM + " ordem not null, "
             + SECCAO + " text not null "
             + ")";
-
     private static final String DATABASE_CREATE_TABLE_OSBI = "Create Table " + TABELA_OSBI + "("
             + COLID + " integer primary key autoincrement, "
             + DESIGN + " text not null, "
@@ -76,7 +80,18 @@ public class DBSQLite extends SQLiteOpenHelper {
             + BOSTAMP + " text not null, "
             + BISTAMP + " text not null "
             + ")";
-
+    private static final String DATABASE_CREATE_TABLE_OSTIMER = "Create Table " + TABELA_OSTIMER + "("
+            + COLID + " integer primary key autoincrement, "
+            + BOSTAMP + " text not null, "
+            + BISTAMP + " text not null, "
+            + ESTADO + " text not null, "
+            + SECCAO + " text not null, "
+            + MAQUINA + " text not null, "
+            + OPERADOR + " text not null, "
+            + LASTTIME + " real not null, "
+            + POSICAO + " integer not null, "
+            + UNIXTIME + " real not null "
+            + ")";
     private static String TABELA_OSPROD = "osprod";
     private static final String DATABASE_CREATE_TABLE_OSPROD = "Create Table " + TABELA_OSPROD + "("
             + COLID + " integer primary key autoincrement, "
@@ -97,6 +112,8 @@ public class DBSQLite extends SQLiteOpenHelper {
         Log.i(TAG, "A criar a tabela " + TABELA_OSBI + " na base de dados " + DATABASE_NAME);
         db.execSQL(DATABASE_CREATE_TABLE_OSPROD);
         Log.i(TAG, "A criar a tabela " + TABELA_OSPROD + " na base de dados " + DATABASE_NAME);
+        db.execSQL(DATABASE_CREATE_TABLE_OSTIMER);
+        Log.i(TAG, "A criar a tabela " + TABELA_OSTIMER + " na base de dados " + DATABASE_NAME);
     }
 
     @Override
@@ -104,6 +121,7 @@ public class DBSQLite extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + TABELA_OSBI);
         db.execSQL("DROP TABLE IF EXISTS " + TABELA_OSBO);
         db.execSQL("DROP TABLE IF EXISTS " + TABELA_OSPROD);
+        db.execSQL("DROP TABLE IF EXISTS " + TABELA_OSTIMER);
         onCreate(db);
     }
 
@@ -173,6 +191,29 @@ public class DBSQLite extends SQLiteOpenHelper {
         db.endTransaction();
         db.close();
         Log.i(TAG, TABELA_OSPROD + ": foram inseridos " + listaOSPROD.size() + " registos");
+    }
+
+    public void gravarOSTIMER(ArrayList<OSTIMER> listaOSTIMER) {
+        SQLiteDatabase db = getWritableDatabase();
+        db.beginTransaction();
+        db.delete(TABELA_OSTIMER, "", null);
+        for (OSTIMER ostimer : listaOSTIMER) {
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(BOSTAMP, ostimer.bostamp);
+            contentValues.put(BISTAMP, ostimer.bistamp);
+            contentValues.put(LASTTIME, ostimer.lasttime);
+            contentValues.put(POSICAO, ostimer.posicao);
+            contentValues.put(UNIXTIME, ostimer.unixtime);
+            contentValues.put(SECCAO, ostimer.seccao);
+            contentValues.put(ESTADO, ostimer.estado);
+            contentValues.put(MAQUINA, ostimer.maquina);
+            contentValues.put(OPERADOR, ostimer.operador);
+            db.insert(TABELA_OSTIMER, null, contentValues);
+        }
+        db.setTransactionSuccessful();
+        db.endTransaction();
+        db.close();
+        Log.i(TAG, TABELA_OSTIMER + ": foram inseridos " + listaOSTIMER.size() + " registos");
     }
 
     public int getQtdBostamp(String bostamp) {
@@ -245,16 +286,131 @@ public class DBSQLite extends SQLiteOpenHelper {
                 , ""
                 , ""
         );
-        if(cursor.moveToFirst()){
+        if (cursor.moveToFirst()) {
             do {
                 OSPROD osprod = new OSPROD();
                 osprod.bostamp = cursor.getString(cursor.getColumnIndex(BOSTAMP));
                 osprod.qtt = cursor.getInt(cursor.getColumnIndex(QTT));
                 lista.add(osprod);
-            }while (cursor.moveToNext());
+            } while (cursor.moveToNext());
         }
         cursor.close();
         db.close();
         return lista;
+    }
+
+    public int getOSTimerPosicao(String bostamp) {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.query(TABELA_OSTIMER
+                , new String[]{POSICAO}
+                , BOSTAMP + " = ?"
+                , new String[]{bostamp}
+                , ""
+                , ""
+                , UNIXTIME + " desc"
+                , "1"
+        );
+        int posicao = -1;
+        if (cursor.moveToFirst()) {
+            posicao = cursor.getInt(cursor.getColumnIndex(POSICAO));
+        }
+        Log.i(TAG, "getOSTimerPosicao(" + bostamp + ") = " + posicao + ", cursor com " + cursor.getCount() + " registos");
+        cursor.close();
+        db.close();
+        return posicao;
+    }
+
+    public OSBO getOSBOemTrabalho() {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursorOSBO = db.query(TABELA_OSBO,
+                new String[]{BOSTAMP, COR, DTCLIENTE, DTCORTEF, DTEMBALA, DTEXPEDI, DTTRANSF, ESTADO, FREF, NMFREF, OBRANO, OBS, ORDEM, SECCAO},
+                SECCAO + " = ? AND " + ESTADO + " = ?",
+                new String[]{MrApp.getSeccao(), MrApp.getEstado()},
+                "",
+                "",
+                ""
+        );
+        if (cursorOSBO.moveToFirst()) {
+            do {
+                Cursor cursorTimer = db.query(TABELA_OSTIMER,
+                        new String[]{POSICAO},
+                        BOSTAMP + " = ?",
+                        new String[]{cursorOSBO.getString(cursorOSBO.getColumnIndex(BOSTAMP))},
+                        "",
+                        "",
+                        UNIXTIME + " DESC",
+                        "1"
+                );
+                if (cursorTimer.moveToFirst()) {
+                    if (cursorTimer.getInt(cursorTimer.getColumnIndex(POSICAO)) == 1) {
+                        OSBO osbo = new OSBO(
+                                cursorOSBO.getInt(cursorOSBO.getColumnIndex(COR)),
+                                cursorOSBO.getString(cursorOSBO.getColumnIndex(DTCORTEF)),
+                                cursorOSBO.getString(cursorOSBO.getColumnIndex(DTCLIENTE)),
+                                cursorOSBO.getString(cursorOSBO.getColumnIndex(DTEMBALA)),
+                                cursorOSBO.getString(cursorOSBO.getColumnIndex(DTEXPEDI)),
+                                cursorOSBO.getString(cursorOSBO.getColumnIndex(DTTRANSF)),
+                                cursorOSBO.getString(cursorOSBO.getColumnIndex(ESTADO)),
+                                cursorOSBO.getString(cursorOSBO.getColumnIndex(FREF)),
+                                cursorOSBO.getString(cursorOSBO.getColumnIndex(NMFREF)),
+                                cursorOSBO.getInt(cursorOSBO.getColumnIndex(OBRANO)),
+                                cursorOSBO.getString(cursorOSBO.getColumnIndex(OBS)),
+                                cursorOSBO.getInt(cursorOSBO.getColumnIndex(ORDEM)),
+                                cursorOSBO.getString(cursorOSBO.getColumnIndex(SECCAO)),
+                                cursorOSBO.getString(cursorOSBO.getColumnIndex(BOSTAMP))
+                        );
+                        cursorTimer.close();
+                        db.close();
+                        return osbo;
+                    }
+                }
+            } while (cursorOSBO.moveToNext());
+        }
+        cursorOSBO.close();
+        db.close();
+        return null;
+    }
+
+    public long getUltimoTempo(String bostamp) {
+        SQLiteDatabase db = getWritableDatabase();
+        Cursor cursor = db.query(TABELA_OSTIMER
+                , new String[]{UNIXTIME}
+                , BOSTAMP + " = ? AND " + POSICAO + " = ? AND " + SECCAO + " = ? AND " + MAQUINA + " = ?"
+                , new String[]{bostamp, "1", MrApp.getSeccao(), MrApp.getMaquina()}
+                , ""
+                , ""
+                , UNIXTIME + " desc"
+                , "1"
+        );
+        long tim = 0;
+        if (cursor.moveToFirst()) {
+            tim = cursor.getLong(cursor.getColumnIndex(UNIXTIME));
+        }
+        cursor.close();
+        db.close();
+        return tim;
+    }
+
+    public long getTotalTempoBostamp(String bostamp) {
+        SQLiteDatabase db = getWritableDatabase();
+        Cursor cursor = db.query(TABELA_OSTIMER
+                , new String[]{LASTTIME, UNIXTIME}
+                , BOSTAMP + " = ? AND " + POSICAO + " = ? AND " + SECCAO + " = ? AND " + MAQUINA + " = ?"
+                , new String[]{bostamp, "2", MrApp.getSeccao(), MrApp.getMaquina()}
+                , ""
+                , ""
+                , UNIXTIME
+        );
+        long tempoCalculado = 0;
+        if (cursor.moveToFirst()) {
+            do {
+                long inicio = cursor.getLong(cursor.getColumnIndex(LASTTIME));
+                long fim = cursor.getLong(cursor.getColumnIndex(UNIXTIME));
+                tempoCalculado += (fim - inicio);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        db.close();
+        return tempoCalculado;
     }
 }

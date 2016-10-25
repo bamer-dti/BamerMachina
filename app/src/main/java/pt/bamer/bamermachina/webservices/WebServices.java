@@ -6,86 +6,144 @@ import android.content.Context;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.androidnetworking.AndroidNetworking;
+import com.androidnetworking.common.Priority;
+import com.androidnetworking.error.ANError;
+import com.androidnetworking.interfaces.JSONObjectRequestListener;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
-
-import okhttp3.Call;
-import okhttp3.Callback;
 import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
+import pt.bamer.bamermachina.ActivityListaOS;
 import pt.bamer.bamermachina.MrApp;
 import pt.bamer.bamermachina.pojos.JSONObjectQtd;
 import pt.bamer.bamermachina.pojos.JSONObjectTimer;
 import pt.bamer.bamermachina.utils.Funcoes;
 
 public class WebServices {
-//    public static final String SERVER_WEBSERVICES = "http://192.168.0.1:99/bameros.svc/";
-        public static final String SERVER_WEBSERVICES = "http://server.bamer.pt:99/bameros.svc/";
+    //    public static final String SERVER_WEBSERVICES = "http://192.168.0.1:99/bameros.svc/";
+    public static final String SERVER_WEBSERVICES = "http://server.bamer.pt:99/bameros.svc/";
     public static final String JSON_URL_REGISTAR_TEMPO = SERVER_WEBSERVICES + "registartempo";
     public static final String JSON_URL_REGISTAR_QTD = SERVER_WEBSERVICES + "registarqtd";
     private static final String TAG = WebServices.class.getSimpleName();
-    private static final String HTTP_OK = "ok";
-    private static final String HTTP_MENSAGEM = "mensagem";
+    private static final String JSON_OK = "ok";
+    private static final String JSON_MENSAGEM = "mensagem";
     private static final MediaType TEXTO = MediaType.parse("text/plain");
 
     public static void registarTempoemSQL(final Activity activity, final JSONObjectTimer jsonObjectTimer) {
-        MrApp.mostrarAlertToWait(activity, "A gravar no servidor, aguarde...");
+        final ActivityListaOS activityListaOS;
+        if (activity instanceof ActivityListaOS) {
+            activityListaOS = (ActivityListaOS) activity;
+        } else {
+            Funcoes.alerta(activity, "Erro...", "Não pode utilizar o comando registarTempoSQL porque não tem origem na Activity ActivityListaOS");
+            return;
+        }
+        MrApp.mostrarAlertToWait(activityListaOS, "A gravar no servidor, aguarde...");
 
-        OkHttpClient client = new OkHttpClient();
-
-        RequestBody body = RequestBody.create(TEXTO, jsonObjectTimer.toString());
-        String url = JSON_URL_REGISTAR_TEMPO;
-        Request request = new Request.Builder()
-                .url(url)
-                .header("Content-Type", "text/plain")
-                .post(body)
-                .build();
-
-        Callback callbackResposta = new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                MrApp.esconderAlertToWait(activity);
-                e.printStackTrace();
-                Funcoes.alerta(activity, "Erro", "A gravação de tempo no webservice não foi efectuada. O erro é:\n" + e.getMessage());
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                // String loginResponseString = response.body().string();
-                MrApp.esconderAlertToWait(activity);
-                try {
-                    final JSONObject responseObj = new JSONObject(response.body().string());
-                    final String mensagem = responseObj.getString(HTTP_MENSAGEM);
-                    final boolean ok = responseObj.getBoolean(HTTP_OK);
-                    Log.i(TAG, response.code() + ": responseObj: " + responseObj);
-                    if (ok) {
-                        activity.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
+        AndroidNetworking.post(JSON_URL_REGISTAR_TEMPO)
+                .addStringBody(jsonObjectTimer.toString())
+                .setTag("test")
+                .addHeaders("Content-Type", "text/plain")
+                .setPriority(Priority.MEDIUM)
+                .build()
+                .getAsJSONObject(new JSONObjectRequestListener() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            boolean resultado = response.getBoolean(JSON_OK);
+                            String mensagem = response.getString(JSON_MENSAGEM);
+                            Log.i(TAG, "code  = " + resultado + ": " + mensagem);
+                            MrApp.esconderAlertToWait(activity);
+                            if (!resultado) {
+                                Log.e(TAG, "Erro ao gravar\n" + jsonObjectTimer.toString());
+                                Funcoes.alerta(activity, "Erro", "A gravação de tempo no webservice não foi efectuada. O erro é:\n" + mensagem);
+                            } else {
                                 Toast.makeText(activity, "Gravado com sucesso, aguarde um momento para actualizar informação", Toast.LENGTH_LONG).show();
+//                                MrApp.mostrarAlertToWait(activity, "A obter dados do servidor, aguarde...");
+                                activityListaOS.getBancadaTrabalho().actualizarDados();
                             }
-                        });
-                    } else {
-                        activity.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Funcoes.alerta(activity, "ERRO", "Não foi possivel gravar:\n" + mensagem);
-                            }
-                        });
+                        } catch (JSONException e) {
+                            MrApp.esconderAlertToWait(activity);
+                            Funcoes.alerta(activity, "Erro", "Ocorreu um erro interno no webservice.\nTente novamente. Se o erro persistir, contacte o DTI: " + e.getLocalizedMessage());
+                            e.printStackTrace();
+                        }
                     }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                // Log.i(TAG, "loginResponseString: " + loginResponseString);
-            }
-        };
 
-        client.newCall(request).enqueue(callbackResposta);
+                    @Override
+                    public void onError(ANError error) {
+                        if (error.getErrorCode() != 0) {
+                            Log.e(TAG, "onError errorCode : " + error.getErrorCode());
+                            Log.e(TAG, "onError errorBody : " + error.getErrorBody());
+                            Log.e(TAG, "onError errorDetail : " + error.getErrorDetail());
+                        } else {
+                            Log.e(TAG, "onError errorDetail : " + error.getErrorDetail());
+                        }
+                        MrApp.esconderAlertToWait(activity);
+                        Funcoes.alerta(activity, "Erro", "Ocorreu um erro em <registarTempoemSQL> ao gravar via webservice.\nTente novamente. Se o erro persistir, contacte o DTI: " + error.getErrorDetail());
+                        Log.i(TAG, jsonObjectTimer.toString());
+                    }
+                });
+
+//        OkHttpClient client = new OkHttpClient();
+//
+//        RequestBody body = RequestBody.create(TEXTO, jsonObjectTimer.toString());
+//        String url = JSON_URL_REGISTAR_TEMPO;
+//        Request request = new Request.Builder()
+//                .url(url)
+//                .header("Content-Type", "text/plain")
+//                .post(body)
+//                .build();
+//
+//        Callback callbackResposta = new Callback() {
+//            @Override
+//            public void onFailure(Call call, IOException e) {
+//                MrApp.esconderAlertToWait(activityListaOS);
+//                e.printStackTrace();
+//                final IOException finalE = e;
+//                activityListaOS.runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        Funcoes.alerta(activityListaOS, "Erro", "ONCALL FAILURE: A gravação de tempo no webservice não foi efectuada. O erro é:\n" + finalE.getMessage());
+//                    }
+//                });
+//            }
+//
+//            @Override
+//            public void onResponse(Call call, Response response) throws IOException {
+//                // String loginResponseString = response.body().string();
+//                MrApp.esconderAlertToWait(activityListaOS);
+//                try {
+//                    final JSONObject responseObj = new JSONObject(response.body().string());
+//                    final String mensagem = responseObj.getString(JSON_MENSAGEM);
+//                    final boolean isOK = responseObj.getBoolean(JSON_OK);
+//                    Log.i(TAG, response.code() + ": responseObj: " + responseObj);
+//                    if (isOK) {
+//                        activityListaOS.runOnUiThread(new Runnable() {
+//                            @Override
+//                            public void run() {
+//                                Toast.makeText(activity, "Gravado com sucesso, aguarde um momento para actualizar informação", Toast.LENGTH_LONG).show();
+//                                activityListaOS.getBancadaTrabalho().actualizarDados();
+//                            }
+//                        });
+//                    } else {
+//                        activityListaOS.runOnUiThread(new Runnable() {
+//                            @Override
+//                            public void run() {
+//                                Funcoes.alerta(activity, "ERRO", "Não foi possivel gravar, tente mais tarde! Mensagem:\n" + mensagem);
+//                            }
+//                        });
+//                    }
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
+//                // Log.i(TAG, "loginResponseString: " + loginResponseString);
+//            }
+//        };
+//
+//        client.newCall(request).enqueue(callbackResposta);
+
+
     }
 
     @SuppressWarnings("unused")
@@ -111,10 +169,10 @@ public class WebServices {
 //                        }
 //                        dismissDialog(dialog);
 ////                        if (jsonObject.getPosicao() == Constantes.MODO_STARTED) {
-////                            ListaOS.ColocarOSemTrabalhoAposWebService((ListaOS) context, jsonObject);
-//////                            ListaOS.retirarRegistoDaLista((ListaOS) context, jsonObject);
+////                            ActivityListaOS.ColocarOSemTrabalhoAposWebService((ActivityListaOS) context, jsonObject);
+//////                            ActivityListaOS.retirarRegistoDaLista((ActivityListaOS) context, jsonObject);
 ////                        } else {
-////                            ListaOS.pararCronometro((ListaOS) context);
+////                            ActivityListaOS.pararCronometro((ActivityListaOS) context);
 ////                        }
 //                    }
 //
@@ -148,8 +206,8 @@ public class WebServices {
 //                    @Override
 //                    public void onResponse(JSONObject response) {
 //                        try {
-//                            boolean resultado = response.getBoolean(HTTP_OK);
-//                            String mensagem = response.getString(HTTP_MENSAGEM);
+//                            boolean resultado = response.getBoolean(JSON_OK);
+//                            String mensagem = response.getString(JSON_MENSAGEM);
 //                            Log.i(TAG, "code  = " + resultado + ": " + mensagem);
 //                            if (!resultado) {
 //                                Log.e(TAG, "Erro ao gravar\n" + jsonObjectQtd.toString());

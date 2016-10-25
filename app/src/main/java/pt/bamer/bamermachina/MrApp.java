@@ -7,6 +7,8 @@ import android.app.ProgressDialog;
 import android.content.SharedPreferences;
 import android.util.Log;
 
+import com.androidnetworking.AndroidNetworking;
+
 import pt.bamer.bamermachina.utils.Constantes;
 import pt.bamer.bamermachina.utils.Funcoes;
 import pt.bamer.bamermachina.utils.ValoresDefeito;
@@ -18,14 +20,21 @@ public class MrApp extends Application {
     private static String maquina;
     private static String operador;
     private static boolean online;
-    private static String estado;
 
     public static String getMaquina() {
         return maquina;
     }
 
+    public static void setMaquina(String maquina) {
+        MrApp.maquina = maquina;
+    }
+
     public static String getOperador() {
         return operador;
+    }
+
+    public static void setOperador(String operador) {
+        MrApp.operador = operador;
     }
 
     public static void setOnline(boolean online) {
@@ -36,28 +45,8 @@ public class MrApp extends Application {
         return Constantes.ESTADO_CORTE;
     }
 
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        Log.i(TAG, "MrApp created!");
-        prefs = getSharedPreferences(Constantes.PREFS_NAME, MODE_PRIVATE);
-        Funcoes.checkFirebaseOnline();
-    }
-
-    public boolean firebaseDatabaseOnline() {
-        return online;
-    }
-
     public static SharedPreferences getPrefs() {
         return prefs;
-    }
-
-    public static void setMaquina(String maquina) {
-        MrApp.maquina = maquina;
-    }
-
-    public static void setOperador(String operador) {
-        MrApp.operador = operador;
     }
 
     public static void mostrarAlertToWait(final Activity activity, final String mensagem) {
@@ -90,5 +79,18 @@ public class MrApp extends Application {
 
     public static String getSeccao() {
         return prefs.getString(Constantes.PREF_SECCAO, ValoresDefeito.SECCAO);
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        Log.i(TAG, "MrApp created!");
+        prefs = getSharedPreferences(Constantes.PREFS_NAME, MODE_PRIVATE);
+        Funcoes.checkFirebaseOnline();
+        AndroidNetworking.initialize(getApplicationContext());
+    }
+
+    public boolean firebaseDatabaseOnline() {
+        return online;
     }
 }

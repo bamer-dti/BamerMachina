@@ -30,7 +30,6 @@ import com.google.firebase.database.ValueEventListener;
 import org.json.JSONException;
 
 import java.util.ArrayList;
-import java.util.Timer;
 
 import fr.castorflex.android.smoothprogressbar.SmoothProgressBar;
 import pt.bamer.bamermachina.adapters.OSRecyclerAdapter;
@@ -40,31 +39,26 @@ import pt.bamer.bamermachina.pojos.JSONObjectTimer;
 import pt.bamer.bamermachina.pojos.OSBI;
 import pt.bamer.bamermachina.pojos.OSBO;
 import pt.bamer.bamermachina.pojos.OSPROD;
+import pt.bamer.bamermachina.pojos.OSTIMER;
 import pt.bamer.bamermachina.utils.Constantes;
 import pt.bamer.bamermachina.utils.Funcoes;
 import pt.bamer.bamermachina.webservices.WebServices;
 
-public class ListaOS extends AppCompatActivity {
-    private static String TAG = ListaOS.class.getSimpleName();
-    public Timer cronometroOS;
-    private ListaOS activityListaOS = this;
+public class ActivityListaOS extends AppCompatActivity {
+    private static String TAG = ActivityListaOS.class.getSimpleName();
+    private ActivityListaOS activityActivityListaOS = this;
     private LinearLayout ll_working_os;
     private TextView tv_os;
     private TextView tv_tempo_total;
     private TextView tv_tempo_parcial;
     private TextView tv_qtt_total;
-    private TextView bt_qtt_feita;
-    private OSBO objectoOSBOIniciado;
-    private ListaOS contextActivity = this;
+    private Button bt_qtt_feita;
+    private ActivityListaOS contextActivity = this;
     private RecyclerView recyclerView;
     private Menu menu;
     private SmoothProgressBar pb_smooth;
-    private OSBO documentoEmTrabalho;
     private OSRecyclerAdapter osRecyclerAdapter;
-
-    public static int getPosicao(String bostamp) {
-        return Constantes.MODO_STARTED;
-    }
+    private BancadaTrabalho bancadaTrabalho;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,27 +92,28 @@ public class ListaOS extends AppCompatActivity {
         ll_working_os.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (objectoOSBOIniciado == null) {
-                    Funcoes.alerta(activityListaOS, "Erro", "O servidor está ocupado. Tente dentro de momentos");
+                OSBO osbo = bancadaTrabalho.getOsbo();
+                if (osbo == null) {
+                    Funcoes.alerta(activityActivityListaOS, "Erro", "O servidor está ocupado. Tente dentro de momentos");
                     return;
                 }
                 Intent intent = new Intent(view.getContext(), Dossier.class);
-                intent.putExtra(Constantes.INTENT_EXTRA_BOSTAMP, objectoOSBOIniciado.bostamp);
+                intent.putExtra(Constantes.INTENT_EXTRA_BOSTAMP, osbo.bostamp);
                 intent.putExtra(Constantes.INTENT_EXTRA_MODO_OPERACIONAL, Constantes.MODO_STARTED);
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
             }
         });
 
-        bt_qtt_feita = (TextView) findViewById(R.id.bt_qtt_feita);
+        bt_qtt_feita = (Button) findViewById(R.id.bt_qtt_feita);
         bt_qtt_feita.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                LayoutInflater li = LayoutInflater.from(activityListaOS);
+                LayoutInflater li = LayoutInflater.from(activityActivityListaOS);
                 @SuppressLint("InflateParams")
                 View promptsView = li.inflate(R.layout.popup_qtt, null);
                 AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
-                        activityListaOS);
+                        activityActivityListaOS);
                 alertDialogBuilder.setView(promptsView);
                 final EditText userInput = (EditText) promptsView.findViewById(R.id.et_qtt);
                 int qttTotal = Integer.parseInt(tv_qtt_total.getText().toString());
@@ -132,7 +127,7 @@ public class ListaOS extends AppCompatActivity {
                         .setPositiveButton("OK",
                                 new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int id) {
-                                        emitirQtdProduzidaPorAvulso(activityListaOS, Integer.parseInt(userInput.getText().toString()));
+                                        emitirQtdProduzidaPorAvulso(activityActivityListaOS, Integer.parseInt(userInput.getText().toString()));
                                     }
                                 })
                         .setNegativeButton("Cancel",
@@ -150,23 +145,42 @@ public class ListaOS extends AppCompatActivity {
             }
         });
 
-        Button bt_stop_OS_Em_Trabalho = (Button) findViewById(R.id.bt_stop);
-        bt_stop_OS_Em_Trabalho.setOnClickListener(new View.OnClickListener() {
+        Button bt_start_stop_OS_Em_Trabalho = (Button) findViewById(R.id.bt_stop);
+        bt_start_stop_OS_Em_Trabalho.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 try {
-                    JSONObjectTimer jsonObject = new JSONObjectTimer(objectoOSBOIniciado.bostamp, "", Constantes.ESTADO_CORTE, 2, -1);
+                    JSONObjectTimer jsonObject = new JSONObjectTimer(bancadaTrabalho.getOsbo().bostamp, "", Constantes.ESTADO_CORTE, Constantes.MODO_STOPED);
                     WebServices.registarTempoemSQL(contextActivity, jsonObject);
                     ll_working_os.setVisibility(View.GONE);
-                    pararCronometro();
+                    bancadaTrabalho.pararCronometro();
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
             }
         });
 
+        this.bancadaTrabalho = new BancadaTrabalho(this);
+
+        //FIREBASE
         FirebaseDatabase databaseref = FirebaseDatabase.getInstance();
-        DatabaseReference refFirebaseOSBO = databaseref.getReference().child(Constantes.NODE_OSBO);
+
+        DatabaseReference refFirebaseOSTIMER = databaseref.getReference(Constantes.NODE_OSTIMER);
+        ValueEventListener listenerFirebaseOSTIMER = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                new TaskFirebaseOSTIMER(dataSnapshot).execute();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+        refFirebaseOSTIMER.addValueEventListener(listenerFirebaseOSTIMER);
+
+
+        DatabaseReference refFirebaseOSBO = databaseref.getReference(Constantes.NODE_OSBO);
         ValueEventListener listenerFirebaseOSBO = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -194,8 +208,8 @@ public class ListaOS extends AppCompatActivity {
         };
         refFirebaseOSBI.addValueEventListener(listenerFirebaseOSBI);
 
-        DatabaseReference refFirebaseOSPROD = databaseref.getReference().child("osprod");
-        ValueEventListener listenerFirebase = new ValueEventListener() {
+        DatabaseReference refFirebaseOSPROD = databaseref.getReference(Constantes.NODE_OSPROD);
+        ValueEventListener listenerFirebaseOSPROD = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 new TaskFirebaseOSPROD(dataSnapshot).execute();
@@ -206,7 +220,9 @@ public class ListaOS extends AppCompatActivity {
 
             }
         };
-        refFirebaseOSPROD.addValueEventListener(listenerFirebase);
+        refFirebaseOSPROD.addValueEventListener(listenerFirebaseOSPROD);
+
+
     }
 
     @Override
@@ -217,12 +233,6 @@ public class ListaOS extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        pararCronometro();
     }
 
     @Override
@@ -254,7 +264,7 @@ public class ListaOS extends AppCompatActivity {
     private void emitirQtdProduzidaPorAvulso(Context context, int qtd) {
         int qtd_anterior = Integer.parseInt(bt_qtt_feita.getText().toString());
         try {
-            if (documentoEmTrabalho == null) {
+            if (bancadaTrabalho.getOsbo() == null) {
                 Funcoes.alerta(context, "Erro", "O servidor está ocupado. Tente dentro de momentos");
                 return;
             }
@@ -262,25 +272,12 @@ public class ListaOS extends AppCompatActivity {
             String mk = "";
             String ref = "";
             String design = "Qtd Avulso";
-            String bostamp = documentoEmTrabalho.bostamp;
+            String bostamp = bancadaTrabalho.getOsbo().bostamp;
             JSONObjectQtd jsonObjectQtd = new JSONObjectQtd(bostamp, dim, mk, ref, design, qtd);
             WebServices.registarQtdEmSQL(contextActivity, bt_qtt_feita, qtd_anterior, qtd, jsonObjectQtd);
         } catch (JSONException e) {
             e.printStackTrace();
-            Funcoes.alerta(contextActivity, "ERRO", "Erro ao construir o objecto JSON.\nListaOS - método emitirQtdProduzidaPorAvulso");
-        }
-    }
-
-    private void iniciarTemposOSAposReplicacao(String bostamp) {
-        Log.i(TAG, "iniciarTemposOSAposReplicacao: '" + bostamp + "' em trabalho visivel!");
-    }
-
-    private void pararCronometro() {
-        Log.i(TAG, "********** A parar o cronometro...");
-        if (cronometroOS != null) {
-            cronometroOS.cancel();
-            cronometroOS.purge();
-            cronometroOS = null;
+            Funcoes.alerta(contextActivity, "ERRO", "Erro ao construir o objecto JSON.\nActivityListaOS - método emitirQtdProduzidaPorAvulso");
         }
     }
 
@@ -291,14 +288,41 @@ public class ListaOS extends AppCompatActivity {
         osRecyclerAdapter.updateSourceData();
     }
 
-    public Timer getCronometroOS() {
-        return null;
+    public LinearLayout getLl_working_os() {
+        return ll_working_os;
+    }
+
+    public TextView getTv_os() {
+        return tv_os;
+    }
+
+    public TextView getTv_qtt_total() {
+        return tv_qtt_total;
+    }
+
+    public Button getBt_qtt_feita() {
+        return bt_qtt_feita;
+    }
+
+    public TextView getTv_tempo_total() {
+        return tv_tempo_total;
+    }
+
+    public TextView getTv_tempo_parcial() {
+        return tv_tempo_parcial;
+    }
+
+    public BancadaTrabalho getBancadaTrabalho() {
+        return bancadaTrabalho;
+    }
+
+    public RecyclerView getRecyclerView() {
+        return recyclerView;
     }
 
     private class TaskFirebaseOSBO extends AsyncTask<Void, Void, Void> {
         private final ArrayList<OSBO> listaOSBO;
         private final DataSnapshot dataSnapShot;
-        private boolean changed;
 
         public TaskFirebaseOSBO(DataSnapshot dataSnapshot) {
             this.listaOSBO = new ArrayList<>();
@@ -320,7 +344,6 @@ public class ListaOS extends AppCompatActivity {
                 if (osbo.seccao.equals(MrApp.getSeccao())
                         && osbo.estado.equals(MrApp.getEstado())) {
                     listaOSBO.add(osbo);
-
                 }
             }
             Log.i(TAG, "listaOSBO: " + listaOSBO.size());
@@ -413,4 +436,48 @@ public class ListaOS extends AppCompatActivity {
         }
     }
 
+    private class TaskFirebaseOSTIMER extends AsyncTask<Void, Void, Void> {
+        private final ArrayList<OSTIMER> listaOSTIMER;
+        private final DataSnapshot dataSnapShot;
+
+        public TaskFirebaseOSTIMER(DataSnapshot dataSnapshot) {
+            this.listaOSTIMER = new ArrayList<>();
+            this.dataSnapShot = dataSnapshot;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            pb_smooth.setVisibility(View.VISIBLE);
+            Log.i(TAG, "TaskFirebaseOSTIMER Secção " + MrApp.getSeccao() + ", estado " + MrApp.getEstado());
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            for (DataSnapshot snapshotOSTIMER : dataSnapShot.getChildren()) {
+                String bostamp = snapshotOSTIMER.getKey();
+                for (DataSnapshot snap : snapshotOSTIMER.getChildren()) {
+                    OSTIMER ostimer = snap.getValue(OSTIMER.class);
+                    String bistamp = snap.getKey();
+                    ostimer.bostamp = bostamp;
+                    ostimer.bistamp = bistamp;
+                    Log.i(TAG, ostimer.toString());
+                    if (ostimer.seccao.equals(MrApp.getSeccao())
+                            && ostimer.estado.equals(MrApp.getEstado())
+                            )
+                        listaOSTIMER.add(ostimer);
+                }
+            }
+            Log.i(TAG, "listaOSTIMER: " + listaOSTIMER.size());
+
+            new DBSQLite(contextActivity).gravarOSTIMER(listaOSTIMER);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            osRecyclerAdapter.updateSourceData();
+            bancadaTrabalho.actualizarDados();
+            pb_smooth.setVisibility(View.INVISIBLE);
+        }
+    }
 }

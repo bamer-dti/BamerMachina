@@ -20,8 +20,8 @@ import org.json.JSONException;
 
 import java.util.ArrayList;
 
+import pt.bamer.bamermachina.ActivityListaOS;
 import pt.bamer.bamermachina.Dossier;
-import pt.bamer.bamermachina.ListaOS;
 import pt.bamer.bamermachina.MrApp;
 import pt.bamer.bamermachina.R;
 import pt.bamer.bamermachina.database.DBSQLite;
@@ -35,10 +35,19 @@ import pt.bamer.bamermachina.webservices.WebServices;
 public class OSRecyclerAdapter extends RecyclerView.Adapter implements View.OnClickListener {
     private static final String TAG = OSRecyclerAdapter.class.getSimpleName();
     private final Context context;
+    private final ActivityListaOS activityListaOS;
+    private final Dossier activityDossier;
     private ArrayList<OSBO> listaOSBO;
 
-    public OSRecyclerAdapter(Context context) {
+    public OSRecyclerAdapter(Activity context) {
         this.context = context;
+        if (context instanceof ActivityListaOS) {
+            this.activityListaOS = (ActivityListaOS) context;
+            this.activityDossier = null;
+        } else {
+            this.activityListaOS = null;
+            this.activityDossier = (Dossier) context;
+        }
         this.listaOSBO = new ArrayList<>();
     }
 
@@ -87,15 +96,15 @@ public class OSRecyclerAdapter extends RecyclerView.Adapter implements View.OnCl
         new AsyncTasks.TaskCalculoQtt(bostamp, viewHolder.tv_qtt, viewHolder.tv_qttfeita, viewHolder.ll_root, this, position).execute();
 
         viewHolder.bt_posicao.setVisibility(View.INVISIBLE);
-        new AsyncTasks.TaskCalcularTempo(bostamp, viewHolder.bt_posicao, viewHolder.tv_temporal, ((ListaOS) context).getCronometroOS()).execute();
 
-        final int finalPosition = holder.getAdapterPosition();
+        new AsyncTasks.TaskCalcularTempo(bostamp, viewHolder, activityListaOS).execute();
+
         viewHolder.bt_posicao.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View view) {
                 JSONObjectTimer jsonObject;
                 try {
-                    jsonObject = new JSONObjectTimer(bostamp, "", Constantes.ESTADO_CORTE, 1, finalPosition);
+                    jsonObject = new JSONObjectTimer(bostamp, "", Constantes.ESTADO_CORTE, Constantes.MODO_STARTED);
                     WebServices.registarTempoemSQL((Activity) context, jsonObject);
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -141,7 +150,7 @@ public class OSRecyclerAdapter extends RecyclerView.Adapter implements View.OnCl
     }
 
     public void updateSourceData() {
-        ((ListaOS) context).runOnUiThread(new Runnable() {
+        ((ActivityListaOS) context).runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 ArrayList<OSBO> lista = new DBSQLite(context).getOSBOOrdered();
@@ -160,12 +169,13 @@ public class OSRecyclerAdapter extends RecyclerView.Adapter implements View.OnCl
                         }
                     }
                 }
+//                ((ActivityListaOS) context).getBancadaTrabalho().actualizarDados();
                 notifyDataSetChanged();
             }
         });
     }
 
-    public void notificar(ListaOS contextActivity, final int i) {
+    public void notificar(ActivityListaOS contextActivity, final int i) {
         contextActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -174,7 +184,18 @@ public class OSRecyclerAdapter extends RecyclerView.Adapter implements View.OnCl
         });
     }
 
-    @SuppressWarnings("WeakerAccess")
+    public void removerOSBO(String bostamp) {
+        Log.i(TAG, "Remover do OSRecyclerAdapter o bostamp " + bostamp);
+        for (int i = 0; i < listaOSBO.size(); i++) {
+            OSBO osbo = listaOSBO.get(i);
+            if (osbo.bostamp.equals(bostamp)) {
+                listaOSBO.remove(i);
+                notifyItemRemoved(i);
+                Log.i(TAG, "Notificar a remoção do item " + bostamp);
+            }
+        }
+    }
+
     public class ViewHolder extends RecyclerView.ViewHolder {
         private final TextView tv_fref;
         private final TextView tv_obrano;
@@ -203,6 +224,18 @@ public class OSRecyclerAdapter extends RecyclerView.Adapter implements View.OnCl
             bt_alertas = (Button) itemView.findViewById(R.id.bt_alertas);
 
             tv_temporal = (TextView) itemView.findViewById(R.id.tv_temporal);
+        }
+
+        public Button getBt_posicao() {
+            return bt_posicao;
+        }
+
+        public Button getBt_alertas() {
+            return bt_alertas;
+        }
+
+        public TextView getTv_temporal() {
+            return tv_temporal;
         }
     }
 }

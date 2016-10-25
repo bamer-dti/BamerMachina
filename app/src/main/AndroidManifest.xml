@@ -21,7 +21,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".Dossier" />
-        <activity android:name=".ListaOS"/>
+        <activity android:name=".ActivityListaOS"/>
     </application>
 
 </manifest>
