@@ -38,7 +38,6 @@ public class BancadaTrabalho {
     }
 
     public void actualizarDados() {
-        Log.i(TAG, "Actualizar dados de RecyclerView OSTIMER");
         OSRecyclerAdapter adapter = (OSRecyclerAdapter) activityListaOS.getRecyclerView().getAdapter();
         //Verificar se a bancada continua em trabalho
         if (osbo != null) {
@@ -58,7 +57,6 @@ public class BancadaTrabalho {
             return;
         }
 
-        Log.i(TAG, "Parece estar tudo correcto, bancada parada?");
         OSBO osboDB = new DBSQLite(activityListaOS).getOSBOemTrabalho();
         if (osboDB == null) {
             return;

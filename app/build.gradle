@@ -43,7 +43,7 @@ dependencies {
 
     compile 'joda-time:joda-time:2.9.4'
 
-    compile 'com.google.firebase:firebase-database:9.0.2'
+    compile 'com.google.firebase:firebase-database:9.6.1'
 
     //    https://github.com/castorflex/SmoothProgressBar
     compile 'com.github.castorflex.smoothprogressbar:library:1.1.0'

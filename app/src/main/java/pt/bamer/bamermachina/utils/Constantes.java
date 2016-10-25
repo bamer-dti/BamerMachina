@@ -18,8 +18,6 @@ public class Constantes {
     public static final String MOSTRAR_FILTRADO = "FILTRADO";
     public static final String PREF_MOSTRAR_TODAS_LINHAS_PROD = "pref_mostrar_todas_linhas_prod";
 
-    public static final String PREF_NUM_OS_EM_LISTA = "prefs_num_os_em_lista";
-
     public static final String FIELD_DIM = "dim";
     public static final String FIELD_MK = "mk";
     public static final String FIELD_REF = "ref";

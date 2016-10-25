@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,6 +22,7 @@ import org.json.JSONException;
 import java.util.ArrayList;
 
 import pt.bamer.bamermachina.ActivityListaOS;
+import pt.bamer.bamermachina.BancadaTrabalho;
 import pt.bamer.bamermachina.Dossier;
 import pt.bamer.bamermachina.MrApp;
 import pt.bamer.bamermachina.R;
@@ -36,18 +38,11 @@ public class OSRecyclerAdapter extends RecyclerView.Adapter implements View.OnCl
     private static final String TAG = OSRecyclerAdapter.class.getSimpleName();
     private final Context context;
     private final ActivityListaOS activityListaOS;
-    private final Dossier activityDossier;
     private ArrayList<OSBO> listaOSBO;
 
     public OSRecyclerAdapter(Activity context) {
         this.context = context;
-        if (context instanceof ActivityListaOS) {
-            this.activityListaOS = (ActivityListaOS) context;
-            this.activityDossier = null;
-        } else {
-            this.activityListaOS = null;
-            this.activityDossier = (Dossier) context;
-        }
+        this.activityListaOS = (ActivityListaOS) context;
         this.listaOSBO = new ArrayList<>();
     }
 
@@ -57,7 +52,6 @@ public class OSRecyclerAdapter extends RecyclerView.Adapter implements View.OnCl
         return new ViewHolder(view);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         ViewHolder viewHolder = (ViewHolder) holder;
@@ -69,7 +63,6 @@ public class OSRecyclerAdapter extends RecyclerView.Adapter implements View.OnCl
         String dtcortef = osbo.dtcortef;
         final String bostamp = osbo.bostamp;
 
-//                Log.i(TAG, qrow.toString());
         String dttransf = osbo.dttransf;
         int obrano = osbo.obrano;
         String fref = osbo.fref;
@@ -96,8 +89,9 @@ public class OSRecyclerAdapter extends RecyclerView.Adapter implements View.OnCl
         new AsyncTasks.TaskCalculoQtt(bostamp, viewHolder.tv_qtt, viewHolder.tv_qttfeita, viewHolder.ll_root, this, position).execute();
 
         viewHolder.bt_posicao.setVisibility(View.INVISIBLE);
-
-        new AsyncTasks.TaskCalcularTempo(bostamp, viewHolder, activityListaOS).execute();
+        if (activityListaOS != null) {
+            new AsyncTasks.TaskCalcularTempo(bostamp, viewHolder, activityListaOS).execute();
+        }
 
         viewHolder.bt_posicao.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -124,10 +118,6 @@ public class OSRecyclerAdapter extends RecyclerView.Adapter implements View.OnCl
         viewHolder.ll_root.setOnClickListener(this);
     }
 
-    private OSBO getItem(int position) {
-        return listaOSBO != null ? listaOSBO.get(position) : null;
-    }
-
     @Override
     public int getItemCount() {
         return listaOSBO == null ? 0 : listaOSBO.size();
@@ -145,43 +135,16 @@ public class OSRecyclerAdapter extends RecyclerView.Adapter implements View.OnCl
         }
     }
 
+    private OSBO getItem(int position) {
+        return listaOSBO != null ? listaOSBO.get(position) : null;
+    }
+
     public ArrayList<OSBO> getListaOSBO() {
         return listaOSBO;
     }
 
-    public void updateSourceData() {
-        ((ActivityListaOS) context).runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                ArrayList<OSBO> lista = new DBSQLite(context).getOSBOOrdered();
-                SharedPreferences prefs = MrApp.getPrefs();
-                boolean mostrarTodos = prefs.getBoolean(Constantes.PREF_MOSTRAR_OS_COMPLETOS, true);
-                Log.i(TAG, "mostrarTodos = " + mostrarTodos);
-                if (mostrarTodos) {
-                    listaOSBO = lista;
-                } else {
-                    for (OSBO osbo : lista) {
-                        String bostamp = osbo.bostamp;
-                        int qtt = new DBSQLite(context).getQtdBostamp(bostamp);
-                        int qttProd = new DBSQLite(context).getQtdProdBostamp(bostamp);
-                        if (qtt != qttProd) {
-                            listaOSBO.add(osbo);
-                        }
-                    }
-                }
-//                ((ActivityListaOS) context).getBancadaTrabalho().actualizarDados();
-                notifyDataSetChanged();
-            }
-        });
-    }
-
-    public void notificar(ActivityListaOS contextActivity, final int i) {
-        contextActivity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                notifyItemChanged(i);
-            }
-        });
+    public void updateSourceData(BancadaTrabalho bancadaTrabalho) {
+        new UpdateSourceTask(bancadaTrabalho).execute();
     }
 
     public void removerOSBO(String bostamp) {
@@ -236,6 +199,46 @@ public class OSRecyclerAdapter extends RecyclerView.Adapter implements View.OnCl
 
         public TextView getTv_temporal() {
             return tv_temporal;
+        }
+    }
+
+    private class UpdateSourceTask extends AsyncTask<Void, Void, Void> {
+        private final BancadaTrabalho bancadaTrabalho;
+
+        public UpdateSourceTask(BancadaTrabalho bancadaTrabalho) {
+            this.bancadaTrabalho = bancadaTrabalho;
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            ArrayList<OSBO> lista = new DBSQLite(context).getOSBOOrdered();
+            SharedPreferences prefs = MrApp.getPrefs();
+            boolean mostrarTodos = prefs.getBoolean(Constantes.PREF_MOSTRAR_OS_COMPLETOS, true);
+            Log.i(TAG, "mostrarTodos = " + mostrarTodos);
+            if (mostrarTodos) {
+                listaOSBO = lista;
+            } else {
+                for (OSBO osbo : lista) {
+                    String bostamp = osbo.bostamp;
+                    int qtt = new DBSQLite(context).getQtdBostamp(bostamp);
+                    int qttProd = new DBSQLite(context).getQtdProdBostamp(bostamp);
+                    if (qtt != qttProd) {
+                        listaOSBO.add(osbo);
+                    }
+                }
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            ((ActivityListaOS) context).runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    notifyDataSetChanged();
+                    bancadaTrabalho.actualizarDados();
+                }
+            });
         }
     }
 }

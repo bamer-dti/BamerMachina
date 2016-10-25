@@ -10,18 +10,25 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import fr.castorflex.android.smoothprogressbar.SmoothProgressBar;
-import pt.bamer.bamermachina.adapters.OSRecyclerAdapter;
 import pt.bamer.bamermachina.adapters.TarefaRecyclerAdapter;
+import pt.bamer.bamermachina.database.DBSQLite;
 import pt.bamer.bamermachina.pojos.OSBI;
+import pt.bamer.bamermachina.pojos.OSPROD;
 import pt.bamer.bamermachina.utils.Constantes;
 
 ///**
@@ -30,11 +37,12 @@ import pt.bamer.bamermachina.utils.Constantes;
 public class Dossier extends AppCompatActivity {
     private static final String TAG = Dossier.class.getSimpleName();
     Dossier activity = this;
-    private RecyclerView recyclerView;
+    private RecyclerView recyclerViewDossier;
     private Menu menu;
     private String bostamp;
     private int modoOperacional;
     private SmoothProgressBar pb_smooth;
+    private TarefaRecyclerAdapter tarefaRecyclerAdapter;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -51,16 +59,16 @@ public class Dossier extends AppCompatActivity {
         paint.setAntiAlias(true);
         paint.setPathEffect(new DashPathEffect(new float[]{25.0f, 25.0f}, 0));
 
-        recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
-        recyclerView.addItemDecoration(
+        recyclerViewDossier = (RecyclerView) findViewById(R.id.recycler_view_dossier);
+        recyclerViewDossier.addItemDecoration(
                 new HorizontalDividerItemDecoration.Builder(this).paint(paint).build());
         LinearLayoutManager mLayoutManager = new LinearLayoutManager(this);
-        recyclerView.setLayoutManager(mLayoutManager);
+        recyclerViewDossier.setLayoutManager(mLayoutManager);
 
         RecyclerView.ItemAnimator itemAnimator = new DefaultItemAnimator();
         itemAnimator.setAddDuration(1000);
         itemAnimator.setRemoveDuration(1000);
-        recyclerView.setItemAnimator(itemAnimator);
+        recyclerViewDossier.setItemAnimator(itemAnimator);
 
         Bundle extras = getIntent().getExtras();
         bostamp = "";
@@ -70,9 +78,35 @@ public class Dossier extends AppCompatActivity {
             modoOperacional = extras.getInt(Constantes.INTENT_EXTRA_MODO_OPERACIONAL);
         }
 
-        RecyclerView.Adapter adapter = new OSRecyclerAdapter(this);
-        recyclerView.setAdapter(adapter);
-        MrApp.esconderAlertToWait(activity);
+        tarefaRecyclerAdapter = new TarefaRecyclerAdapter(this, modoOperacional);
+        recyclerViewDossier.setAdapter(tarefaRecyclerAdapter);
+
+        DatabaseReference refOSBI = FirebaseDatabase.getInstance().getReference(Constantes.NODE_OSBI).child(bostamp);
+        refOSBI.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                new TaskFirebaseOSBI(dataSnapshot).execute();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+        DatabaseReference refOSPROD = FirebaseDatabase.getInstance().getReference(Constantes.NODE_OSPROD);
+        refOSPROD.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                new TaskFirebaseOSPROD(dataSnapshot).execute();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
     }
 
     @Override
@@ -127,39 +161,79 @@ public class Dossier extends AppCompatActivity {
         menu.findItem(R.id.itemmenu_mostrar_tudo).setTitle(vis ? Constantes.MOSTRAR_TUDO : Constantes.MOSTRAR_FILTRADO);
     }
 
-    private class efectuarAdapter extends AsyncTask<Void, Void, Void> {
+    private class TaskFirebaseOSBI extends AsyncTask<Void, Void, Void> {
+        private final DataSnapshot dataSnapShot;
+        private ArrayList<OSBI> listaDoArrayOSBI;
 
-        private boolean vertudo;
-        private List<OSBI> listaOSBI;
-
-        efectuarAdapter(ArrayList<OSBI> listaOSBI) {
-            this.listaOSBI = listaOSBI;
+        public TaskFirebaseOSBI(DataSnapshot dataSnapshot) {
+            this.listaDoArrayOSBI = new ArrayList<>();
+            this.dataSnapShot = dataSnapshot;
         }
 
         @Override
         protected void onPreExecute() {
-            SharedPreferences prefs = MrApp.getPrefs();
-            vertudo = prefs.getBoolean(Constantes.PREF_MOSTRAR_TODAS_LINHAS_PROD, true);
-            MrApp.mostrarAlertToWait(activity, "A organizar dados...");
+            pb_smooth.setVisibility(View.VISIBLE);
         }
-
 
         @Override
         protected Void doInBackground(Void... voids) {
+            ArrayList<OSBI> lista = new ArrayList<>();
+            for (DataSnapshot dataSnapshotOSBI : dataSnapShot.getChildren()) {
+                OSBI osbi = dataSnapshotOSBI.getValue(OSBI.class);
+                osbi.bostamp = bostamp;
+                osbi.bistamp = dataSnapshotOSBI.getKey();
+                Log.i(TAG, "OSBI " + osbi.toString());
+                lista.add(osbi);
+            }
+
+            new DBSQLite(activity).gravarOSBIParcial(lista);
+
+            Log.i(TAG, "listaOSBIPARCIAL: " + lista.size());
+
+            listaDoArrayOSBI = new DBSQLite(activity).getOSBIAgrupada();
+
             return null;
         }
 
         @Override
         protected void onPostExecute(Void aVoid) {
-            final TarefaRecyclerAdapter tarefaRecyclerAdapter = new TarefaRecyclerAdapter(activity, listaOSBI, modoOperacional);
-            runOnUiThread(new Runnable() {
-                              @Override
-                              public void run() {
-                                  recyclerView.setAdapter(tarefaRecyclerAdapter);
-                              }
-                          }
-            );
-            MrApp.esconderAlertToWait(activity);
+            pb_smooth.setVisibility(View.INVISIBLE);
+            tarefaRecyclerAdapter.updateSource(listaDoArrayOSBI);
+        }
+    }
+
+    private class TaskFirebaseOSPROD extends AsyncTask<Void, Void, Void> {
+        private final DataSnapshot dataSnapShot;
+
+        public TaskFirebaseOSPROD(DataSnapshot dataSnapshot) {
+            this.dataSnapShot = dataSnapshot;
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            ArrayList<OSPROD> listaOSPROD = new ArrayList<>();
+            for (DataSnapshot snapshotOSPROD : dataSnapShot.getChildren()) {
+                String bostamp = snapshotOSPROD.getKey();
+                for (DataSnapshot dataSnapshotOSPROD : snapshotOSPROD.getChildren()) {
+                    OSPROD osprod = dataSnapshotOSPROD.getValue(OSPROD.class);
+                    osprod.bostamp = bostamp;
+                    osprod.bistamp = dataSnapshotOSPROD.getKey();
+                    listaOSPROD.add(osprod);
+                    Log.i(TAG, "osbostamp:  " + osprod.bostamp + ", bistamp = " + osprod.bistamp + ", qtt = " + osprod.qtt);
+                }
+            }
+            new DBSQLite(activity).gravarOSPROD(listaOSPROD);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    tarefaRecyclerAdapter.notifyDataSetChanged();
+                }
+            });
         }
     }
 }

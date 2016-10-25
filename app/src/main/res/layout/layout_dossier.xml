@@ -8,7 +8,7 @@
     <fr.castorflex.android.smoothprogressbar.SmoothProgressBar
         android:id="@+id/pb_smooth"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:indeterminate="true"
         app:spb_color="#FF0000"
         app:spb_mirror_mode="false"
@@ -26,9 +26,9 @@
         android:layout_height="wrap_content">
 
         <android.support.v7.widget.RecyclerView
-            android:id="@+id/recycler_view"
+            android:id="@+id/recycler_view_dossier"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:divider="@color/md_grey_900"
             android:dividerHeight="1px"/>
     </LinearLayout>

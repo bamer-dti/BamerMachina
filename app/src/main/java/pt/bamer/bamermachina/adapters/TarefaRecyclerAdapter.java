@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
@@ -19,38 +20,37 @@ import android.widget.TextView;
 
 import org.json.JSONException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import pt.bamer.bamermachina.Dossier;
 import pt.bamer.bamermachina.MrApp;
 import pt.bamer.bamermachina.R;
+import pt.bamer.bamermachina.database.DBSQLite;
 import pt.bamer.bamermachina.pojos.JSONObjectQtd;
 import pt.bamer.bamermachina.pojos.OSBI;
 import pt.bamer.bamermachina.utils.Constantes;
 import pt.bamer.bamermachina.webservices.WebServices;
 
-///**
-// * Created by miguel.silva on 21-04-2016.
-// */
 public class TarefaRecyclerAdapter extends RecyclerView.Adapter {
     @SuppressWarnings("unused")
     private static final String TAG = TarefaRecyclerAdapter.class.getSimpleName();
     private final Dossier activityDossier;
-    private final List<OSBI> lista;
-    private int modoOperacional;
+    private final int modoOperacional;
+    private List<OSBI> listaOSBI;
 
-    public TarefaRecyclerAdapter(Dossier activityDossier, List<OSBI> lista, int modoOperacional) {
+    public TarefaRecyclerAdapter(Dossier activityDossier, int modoOperacional) {
         this.activityDossier = activityDossier;
-        this.lista = lista;
         this.modoOperacional = modoOperacional;
     }
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        final View view = LayoutInflater.from(this.activityDossier).inflate(R.layout.view_task, parent, false);
+        final View view = LayoutInflater.from(activityDossier).inflate(R.layout.view_task, parent, false);
         return new ViewHolder(view);
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         final ViewHolder viewHolder = (ViewHolder) holder;
@@ -58,13 +58,12 @@ public class TarefaRecyclerAdapter extends RecyclerView.Adapter {
         if (osbi == null) {
             return;
         }
-        @SuppressWarnings("unchecked")
         final String bostamp = osbi.bostamp;
         final String dim = osbi.dim;
         final String mk = osbi.mk;
         final String ref = osbi.ref;
         final String design = osbi.design;
-        boolean hideButs = Constantes.MODO_STARTED == modoOperacional;
+        boolean hideButs = modoOperacional == Constantes.MODO_STARTED;
 
         viewHolder.tv_ref.setText(ref + " - " + design);
 
@@ -137,21 +136,23 @@ public class TarefaRecyclerAdapter extends RecyclerView.Adapter {
         } else {
             viewHolder.bt_parcial.setVisibility(View.GONE);
         }
-
     }
 
+    @Nullable
     private OSBI getItem(int position) {
-        return lista != null ? lista.get(position) : null;
+        return listaOSBI != null ? listaOSBI.get(position) : null;
     }
 
     @Override
     public int getItemCount() {
-        return lista != null ? lista.size() : 0;
+        int num = listaOSBI != null ? listaOSBI.size() : 0;
+        Log.i(TAG, "Nº de itens na lista OSBI = " + num);
+        return num;
     }
 
     public void actualizarQtdProd(String bostamp, String dim, String mk, String ref, String design) {
-        for (int i = 0; i < lista.size(); i++) {
-            OSBI osbi = lista.get(i);
+        for (int i = 0; i < listaOSBI.size(); i++) {
+            OSBI osbi = listaOSBI.get(i);
             String bostamp_ = osbi.bostamp;
             String dim_ = osbi.dim;
             String mk_ = osbi.mk;
@@ -169,6 +170,48 @@ public class TarefaRecyclerAdapter extends RecyclerView.Adapter {
                     }
                 }
             }
+        }
+    }
+
+    public void updateSource(ArrayList<OSBI> lista) {
+        listaOSBI = lista;
+        activityDossier.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                notifyDataSetChanged();
+            }
+        });
+    }
+
+    public void pintarObjecto(ViewHolder holder, int qttTotal, int qttParcial) {
+        SharedPreferences prefs = MrApp.getPrefs();
+        final boolean vertudo = prefs.getBoolean(Constantes.PREF_MOSTRAR_TODAS_LINHAS_PROD, true);
+        holder.tv_qtt.setText(qttTotal + (qttParcial == 0 ? "" : "-" + qttParcial + "=" + (qttTotal - qttParcial)));
+        holder.llinha.setBackgroundColor(ContextCompat.getColor(holder.contextHolder, R.color.md_white_1000));
+        if (qttParcial > 0)
+            holder.llinha.setBackgroundColor(ContextCompat.getColor(holder.contextHolder, R.color.md_amber_200));
+        holder.llinha.setVisibility(View.VISIBLE);
+        if (qttTotal - qttParcial == 0) {
+            if (vertudo) {
+                holder.llinha.setBackgroundColor(ContextCompat.getColor(holder.contextHolder, R.color.md_amber_900));
+            } else {
+                removerItem(holder.getAdapterPosition());
+            }
+        }
+        if (modoOperacional == Constantes.MODO_STARTED) {
+            holder.bt_total.setVisibility(qttParcial != 0 ? View.INVISIBLE : View.VISIBLE);
+            holder.bt_parcial.setVisibility(qttTotal - qttParcial == 0 ? View.INVISIBLE : View.VISIBLE);
+        } else {
+            holder.bt_total.setVisibility(View.GONE);
+            holder.bt_parcial.setVisibility(View.GONE);
+        }
+    }
+
+    public void removerItem(int position) {
+        if (position >= 0 && position <= listaOSBI.size()) {
+            listaOSBI.remove(position);
+            notifyItemRemoved(position);
+            notifyItemRangeChanged(position, listaOSBI.size());
         }
     }
 
@@ -196,30 +239,6 @@ public class TarefaRecyclerAdapter extends RecyclerView.Adapter {
         }
     }
 
-    public void pintarObjecto(ViewHolder holder, int qttTotal, int qttParcial) {
-        SharedPreferences prefs = MrApp.getPrefs();
-        final boolean vertudo = prefs.getBoolean(Constantes.PREF_MOSTRAR_TODAS_LINHAS_PROD, true);
-        holder.tv_qtt.setText(qttTotal + (qttParcial == 0 ? "" : "-" + qttParcial + "=" + (qttTotal - qttParcial)));
-        holder.llinha.setBackgroundColor(ContextCompat.getColor(holder.contextHolder, R.color.md_white_1000));
-        if (qttParcial > 0)
-            holder.llinha.setBackgroundColor(ContextCompat.getColor(holder.contextHolder, R.color.md_amber_200));
-        holder.llinha.setVisibility(View.VISIBLE);
-        if (qttTotal - qttParcial == 0) {
-            if (vertudo) {
-                holder.llinha.setBackgroundColor(ContextCompat.getColor(holder.contextHolder, R.color.md_amber_900));
-            } else {
-                removerItem(holder.getAdapterPosition());
-            }
-        }
-        if (modoOperacional == Constantes.MODO_STARTED) {
-            holder.bt_total.setVisibility(qttParcial != 0 ? View.INVISIBLE : View.VISIBLE);
-            holder.bt_parcial.setVisibility(qttTotal - qttParcial == 0 ? View.INVISIBLE : View.VISIBLE);
-        } else {
-            holder.bt_total.setVisibility(View.GONE);
-            holder.bt_parcial.setVisibility(View.GONE);
-        }
-    }
-
     private class TaskQtd extends AsyncTask<Void, Void, Void> {
         private final OSBI osbi;
         private final ViewHolder holder;
@@ -233,28 +252,14 @@ public class TarefaRecyclerAdapter extends RecyclerView.Adapter {
 
         @Override
         protected Void doInBackground(Void... voids) {
-            @SuppressWarnings("unchecked")
-            String bostamp = osbi.bostamp;
-            String dim = osbi.dim;
-            String mk = osbi.mk;
-            String ref = osbi.ref;
-            String design = osbi.design;
             qtt = osbi.qtt;
-            qttFeita = 0;
+            qttFeita = new DBSQLite(activityDossier).getQtdProdBistamp(osbi);
             return null;
         }
 
         @Override
         protected void onPostExecute(Void aVoid) {
             pintarObjecto(holder, qtt, qttFeita);
-        }
-    }
-
-    public void removerItem(int position) {
-        if (position >= 0 && position <= lista.size()) {
-            lista.remove(position);
-            notifyItemRemoved(position);
-            notifyItemRangeChanged(position, lista.size());
         }
     }
 }

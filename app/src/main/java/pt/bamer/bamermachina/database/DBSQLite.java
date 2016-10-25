@@ -18,11 +18,13 @@ import pt.bamer.bamermachina.pojos.OSTIMER;
 public class DBSQLite extends SQLiteOpenHelper {
     private static final String TAG = DBSQLite.class.getSimpleName();
     private static final String DATABASE_NAME = "opsec";
-    private static final int DATABASE_VERSION = 4;
+    private static final int DATABASE_VERSION = 6;
 
     private static final String TABELA_OSBO = "osbo";
     private static final String TABELA_OSBI = "osbi";
+    private static final String TABELA_OSBI_PARCIAL = "osbip";
     private static final String TABELA_OSTIMER = "ostimer";
+
     private static final String COLID = "_id";
     private static final String BOSTAMP = "bostamp";
     private static final String BISTAMP = "bistamp";
@@ -80,6 +82,18 @@ public class DBSQLite extends SQLiteOpenHelper {
             + BOSTAMP + " text not null, "
             + BISTAMP + " text not null "
             + ")";
+    private static final String DATABASE_CREATE_TABLE_OSBI_PARCIAL = "Create Table " + TABELA_OSBI_PARCIAL + "("
+            + COLID + " integer primary key autoincrement, "
+            + DESIGN + " text not null, "
+            + DIM + " text not null, "
+            + FAMILIA + " text not null, "
+            + MK + " text not null, "
+            + QTT + " real not null, "
+            + REF + " real not null, "
+            + TIPO + " real not null, "
+            + BOSTAMP + " text not null, "
+            + BISTAMP + " text not null "
+            + ")";
     private static final String DATABASE_CREATE_TABLE_OSTIMER = "Create Table " + TABELA_OSTIMER + "("
             + COLID + " integer primary key autoincrement, "
             + BOSTAMP + " text not null, "
@@ -95,6 +109,10 @@ public class DBSQLite extends SQLiteOpenHelper {
     private static String TABELA_OSPROD = "osprod";
     private static final String DATABASE_CREATE_TABLE_OSPROD = "Create Table " + TABELA_OSPROD + "("
             + COLID + " integer primary key autoincrement, "
+            + REF + " text not null, "
+            + DESIGN + " text not null, "
+            + DIM + " text not null, "
+            + MK + " text not null, "
             + QTT + " real not null, "
             + BOSTAMP + " text not null, "
             + BISTAMP + " text not null "
@@ -110,6 +128,8 @@ public class DBSQLite extends SQLiteOpenHelper {
         Log.i(TAG, "A criar a tabela " + TABELA_OSBO + " na base de dados " + DATABASE_NAME);
         db.execSQL(DATABASE_CREATE_TABLE_OSBI);
         Log.i(TAG, "A criar a tabela " + TABELA_OSBI + " na base de dados " + DATABASE_NAME);
+        db.execSQL(DATABASE_CREATE_TABLE_OSBI_PARCIAL);
+        Log.i(TAG, "A criar a tabela " + TABELA_OSBI_PARCIAL + " na base de dados " + DATABASE_NAME);
         db.execSQL(DATABASE_CREATE_TABLE_OSPROD);
         Log.i(TAG, "A criar a tabela " + TABELA_OSPROD + " na base de dados " + DATABASE_NAME);
         db.execSQL(DATABASE_CREATE_TABLE_OSTIMER);
@@ -119,6 +139,7 @@ public class DBSQLite extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int i, int i1) {
         db.execSQL("DROP TABLE IF EXISTS " + TABELA_OSBI);
+        db.execSQL("DROP TABLE IF EXISTS " + TABELA_OSBI_PARCIAL);
         db.execSQL("DROP TABLE IF EXISTS " + TABELA_OSBO);
         db.execSQL("DROP TABLE IF EXISTS " + TABELA_OSPROD);
         db.execSQL("DROP TABLE IF EXISTS " + TABELA_OSTIMER);
@@ -150,7 +171,7 @@ public class DBSQLite extends SQLiteOpenHelper {
         db.setTransactionSuccessful();
         db.endTransaction();
         db.close();
-        Log.i(TAG, TABELA_OSBO + ": foram inseridos " + listaOSBO.size() + " registos");
+        Log.d(TAG, TABELA_OSBO + ": foram inseridos " + listaOSBO.size() + " registos");
     }
 
     public void gravarOSBI(ArrayList<OSBI> listaOSBI) {
@@ -173,7 +194,30 @@ public class DBSQLite extends SQLiteOpenHelper {
         db.setTransactionSuccessful();
         db.endTransaction();
         db.close();
-        Log.i(TAG, TABELA_OSBI + ": foram inseridos " + listaOSBI.size() + " registos");
+        Log.d(TAG, TABELA_OSBI + ": foram inseridos " + listaOSBI.size() + " registos");
+    }
+
+    public void gravarOSBIParcial(ArrayList<OSBI> listaOSBI) {
+        SQLiteDatabase db = getWritableDatabase();
+        db.beginTransaction();
+        db.delete(TABELA_OSBI_PARCIAL, "", null);
+        for (OSBI osbi : listaOSBI) {
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(DESIGN, osbi.design);
+            contentValues.put(DIM, osbi.dim);
+            contentValues.put(FAMILIA, osbi.familia);
+            contentValues.put(MK, osbi.mk);
+            contentValues.put(QTT, osbi.qtt);
+            contentValues.put(REF, osbi.ref);
+            contentValues.put(TIPO, osbi.tipo);
+            contentValues.put(BOSTAMP, osbi.bostamp);
+            contentValues.put(BISTAMP, osbi.bistamp);
+            db.insert(TABELA_OSBI_PARCIAL, null, contentValues);
+        }
+        db.setTransactionSuccessful();
+        db.endTransaction();
+        db.close();
+        Log.d(TAG, TABELA_OSBI_PARCIAL + ": foram inseridos " + listaOSBI.size() + " registos");
     }
 
     public void gravarOSPROD(ArrayList<OSPROD> listaOSPROD) {
@@ -185,12 +229,16 @@ public class DBSQLite extends SQLiteOpenHelper {
             contentValues.put(QTT, osprod.qtt);
             contentValues.put(BOSTAMP, osprod.bostamp);
             contentValues.put(BISTAMP, osprod.bistamp);
+            contentValues.put(REF, osprod.ref);
+            contentValues.put(DESIGN, osprod.design);
+            contentValues.put(DIM, osprod.dim);
+            contentValues.put(MK, osprod.mk);
             db.insert(TABELA_OSPROD, null, contentValues);
         }
         db.setTransactionSuccessful();
         db.endTransaction();
         db.close();
-        Log.i(TAG, TABELA_OSPROD + ": foram inseridos " + listaOSPROD.size() + " registos");
+        Log.d(TAG, TABELA_OSPROD + ": foram inseridos " + listaOSPROD.size() + " registos");
     }
 
     public void gravarOSTIMER(ArrayList<OSTIMER> listaOSTIMER) {
@@ -213,7 +261,7 @@ public class DBSQLite extends SQLiteOpenHelper {
         db.setTransactionSuccessful();
         db.endTransaction();
         db.close();
-        Log.i(TAG, TABELA_OSTIMER + ": foram inseridos " + listaOSTIMER.size() + " registos");
+        Log.d(TAG, TABELA_OSTIMER + ": foram inseridos " + listaOSTIMER.size() + " registos");
     }
 
     public int getQtdBostamp(String bostamp) {
@@ -233,6 +281,23 @@ public class DBSQLite extends SQLiteOpenHelper {
     public int getQtdProdBostamp(String bostamp) {
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.query(TABELA_OSPROD, new String[]{"SUM(" + QTT + ") as " + QTT}, BOSTAMP + " = ?", new String[]{bostamp}, "", "", "");
+        int qtt = 0;
+        if (cursor.moveToFirst()) {
+            do {
+                qtt = cursor.getInt(cursor.getColumnIndex(QTT));
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        db.close();
+        return qtt;
+    }
+
+    public int getQtdProdBistamp(OSBI osbi) {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.query(TABELA_OSPROD, new String[]{"SUM(" + QTT + ") as " + QTT}
+                , REF + "=? AND " + DESIGN + "=? AND " + DIM + "=? AND " + MK + "=?"
+                , new String[]{osbi.ref, osbi.design, osbi.dim, osbi.mk}
+                , "", "", "");
         int qtt = 0;
         if (cursor.moveToFirst()) {
             do {
@@ -275,30 +340,6 @@ public class DBSQLite extends SQLiteOpenHelper {
         return lista;
     }
 
-    public ArrayList<OSPROD> getProdAgrupadaPorBostamp() {
-        ArrayList<OSPROD> lista = new ArrayList<>();
-        SQLiteDatabase db = getReadableDatabase();
-        Cursor cursor = db.query(TABELA_OSPROD,
-                new String[]{BOSTAMP, "SUM(" + QTT + ") as " + QTT},
-                "",
-                null,
-                BOSTAMP
-                , ""
-                , ""
-        );
-        if (cursor.moveToFirst()) {
-            do {
-                OSPROD osprod = new OSPROD();
-                osprod.bostamp = cursor.getString(cursor.getColumnIndex(BOSTAMP));
-                osprod.qtt = cursor.getInt(cursor.getColumnIndex(QTT));
-                lista.add(osprod);
-            } while (cursor.moveToNext());
-        }
-        cursor.close();
-        db.close();
-        return lista;
-    }
-
     public int getOSTimerPosicao(String bostamp) {
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.query(TABELA_OSTIMER
@@ -314,7 +355,8 @@ public class DBSQLite extends SQLiteOpenHelper {
         if (cursor.moveToFirst()) {
             posicao = cursor.getInt(cursor.getColumnIndex(POSICAO));
         }
-        Log.i(TAG, "getOSTimerPosicao(" + bostamp + ") = " + posicao + ", cursor com " + cursor.getCount() + " registos");
+        if (posicao > -1)
+            Log.d(TAG, "getOSTimerPosicao(" + bostamp + ") = " + posicao + ", cursor com " + cursor.getCount() + " registos");
         cursor.close();
         db.close();
         return posicao;
@@ -412,5 +454,34 @@ public class DBSQLite extends SQLiteOpenHelper {
         cursor.close();
         db.close();
         return tempoCalculado;
+    }
+
+    public ArrayList<OSBI> getOSBIAgrupada() {
+        SQLiteDatabase dbr = getReadableDatabase();
+        Cursor cursor = dbr.query(TABELA_OSBI_PARCIAL, new String[]{REF, DESIGN, "SUM(" + QTT + ") as " + QTT, DIM, MK, FAMILIA, TIPO, BOSTAMP}
+                , ""
+                , null
+                , REF + ", " + DESIGN + ", " + DIM + ", " + MK + ", " + FAMILIA + ", " + TIPO + ", " + BOSTAMP
+                , "", DIM + ", " + MK + ", " + DESIGN);
+        ArrayList<OSBI> listaAgrupada = new ArrayList<>();
+        Log.w(TAG, "Cursor agrupado tem " + cursor.getCount());
+        if (cursor.moveToNext()) {
+            do {
+                String ref = cursor.getString(cursor.getColumnIndex(REF));
+                String design = cursor.getString(cursor.getColumnIndex(DESIGN));
+                int qtt = cursor.getInt(cursor.getColumnIndex(QTT));
+                String dim = cursor.getString(cursor.getColumnIndex(DIM));
+                String mk = cursor.getString(cursor.getColumnIndex(MK));
+                String bostamp = cursor.getString(cursor.getColumnIndex(BOSTAMP));
+                String bistamp = "";
+                String familia = cursor.getString(cursor.getColumnIndex(FAMILIA));
+                String tipo = cursor.getString(cursor.getColumnIndex(TIPO));
+                OSBI osbi = new OSBI(ref, design, qtt, dim, mk, bostamp, bistamp, familia, tipo);
+                listaAgrupada.add(osbi);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        dbr.close();
+        return listaAgrupada;
     }
 }

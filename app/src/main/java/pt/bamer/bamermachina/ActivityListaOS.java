@@ -71,7 +71,7 @@ public class ActivityListaOS extends AppCompatActivity {
         //noinspection ConstantConditions
 //        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        recyclerView = (RecyclerView) findViewById(R.id.recycler_view_dossier);
         LinearLayoutManager recyclerViewLayoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(recyclerViewLayoutManager);
         osRecyclerAdapter = new OSRecyclerAdapter(contextActivity);
@@ -221,8 +221,6 @@ public class ActivityListaOS extends AppCompatActivity {
             }
         };
         refFirebaseOSPROD.addValueEventListener(listenerFirebaseOSPROD);
-
-
     }
 
     @Override
@@ -285,7 +283,7 @@ public class ActivityListaOS extends AppCompatActivity {
         SharedPreferences prefs = MrApp.getPrefs();
         boolean vis = prefs.getBoolean(Constantes.PREF_MOSTRAR_OS_COMPLETOS, true);
         menu.findItem(R.id.itemmenu_mostrar_tudo).setTitle(vis ? Constantes.MOSTRAR_TUDO : Constantes.MOSTRAR_FILTRADO);
-        osRecyclerAdapter.updateSourceData();
+        osRecyclerAdapter.updateSourceData(bancadaTrabalho);
     }
 
     public LinearLayout getLl_working_os() {
@@ -354,7 +352,7 @@ public class ActivityListaOS extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Void aVoid) {
-            osRecyclerAdapter.updateSourceData();
+            osRecyclerAdapter.updateSourceData(bancadaTrabalho);
             pb_smooth.setVisibility(View.INVISIBLE);
         }
     }
@@ -393,18 +391,19 @@ public class ActivityListaOS extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Void aVoid) {
-            osRecyclerAdapter.updateSourceData();
+            osRecyclerAdapter.updateSourceData(bancadaTrabalho);
             pb_smooth.setVisibility(View.INVISIBLE);
         }
     }
 
-    private class TaskFirebaseOSPROD extends AsyncTask<Void, Void, Void> {
+    public class TaskFirebaseOSPROD extends AsyncTask<Void, Void, Void> {
         private final DataSnapshot snap;
         private final ArrayList<OSPROD> listaOSPROD;
 
         public TaskFirebaseOSPROD(DataSnapshot dataSnapshot) {
             this.snap = dataSnapshot;
             this.listaOSPROD = new ArrayList<>();
+            pb_smooth.setVisibility(View.VISIBLE);
         }
 
         @Override
@@ -419,20 +418,14 @@ public class ActivityListaOS extends AppCompatActivity {
                     Log.i(TAG, "osbostamp:  " + osprod.bostamp + ", bistamp = " + osprod.bistamp + ", qtt = " + osprod.qtt);
                 }
             }
-            Log.i(TAG, "listaOSPROD: " + listaOSPROD.size());
             new DBSQLite(contextActivity).gravarOSPROD(listaOSPROD);
-
-            ArrayList<OSPROD> listaProd = new DBSQLite(contextActivity).getProdAgrupadaPorBostamp();
-            ArrayList<OSBO> listaOSBO = osRecyclerAdapter.getListaOSBO();
-            for (OSPROD osprod : listaProd) {
-                for (int i = 0; i < listaOSBO.size(); i++) {
-                    OSBO osbo = listaOSBO.get(i);
-                    if (osprod.bostamp.equals(osbo.bostamp)) {
-                        osRecyclerAdapter.notificar(contextActivity, i);
-                    }
-                }
-            }
             return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            osRecyclerAdapter.updateSourceData(bancadaTrabalho);
+            pb_smooth.setVisibility(View.INVISIBLE);
         }
     }
 
@@ -460,7 +453,6 @@ public class ActivityListaOS extends AppCompatActivity {
                     String bistamp = snap.getKey();
                     ostimer.bostamp = bostamp;
                     ostimer.bistamp = bistamp;
-                    Log.i(TAG, ostimer.toString());
                     if (ostimer.seccao.equals(MrApp.getSeccao())
                             && ostimer.estado.equals(MrApp.getEstado())
                             )
@@ -475,8 +467,7 @@ public class ActivityListaOS extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Void aVoid) {
-            osRecyclerAdapter.updateSourceData();
-            bancadaTrabalho.actualizarDados();
+            osRecyclerAdapter.updateSourceData(bancadaTrabalho);
             pb_smooth.setVisibility(View.INVISIBLE);
         }
     }

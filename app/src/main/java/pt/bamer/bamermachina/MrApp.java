@@ -90,7 +90,14 @@ public class MrApp extends Application {
         AndroidNetworking.initialize(getApplicationContext());
     }
 
+    @SuppressWarnings("unused")
     public boolean firebaseDatabaseOnline() {
         return online;
+    }
+
+    @Override
+    public void onTerminate() {
+        super.onTerminate();
+        System.exit(0);
     }
 }

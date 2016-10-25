@@ -14,4 +14,6 @@
     <string name="estado">Estado</string>
     <string name="reticencias">…</string>
     <string name="eliminar_db">Eliminar DataBase</string>
+    <string name="TOTAL">TOTAL</string>
+    <string name="PARTE">PARTE</string>
 </resources>

@@ -1,12 +1,9 @@
 package pt.bamer.bamermachina;
 
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -68,21 +65,6 @@ public class Entrada extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-    }
-
-    private void alertaExitApp(Context context) {
-        AlertDialog.Builder alertBuilder = new AlertDialog.Builder(context);
-        alertBuilder.setMessage("A aplicação irá ser fechada para reconfigurar os dados");
-        alertBuilder.setTitle("Reinicio!");
-        alertBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                System.exit(0);
-            }
-        });
-
-        alertBuilder.create();
-        alertBuilder.show();
     }
 
     @Override

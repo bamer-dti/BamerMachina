@@ -13,7 +13,7 @@
         android:id="@+id/bt_total"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Total" />
+        android:text="@string/TOTAL" />
 
     <TextView
         android:id="@+id/tv_ref"
@@ -21,8 +21,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="5dp"
         android:layout_weight="1"
-        android:singleLine="false"
-        android:text="ref"
+        android:text="@string/aguarde"
         android:textAppearance="@style/TextAppearance.AppCompat.Small"
         android:textColor="@color/md_grey_900" />
 
@@ -38,8 +37,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:layout_weight="1"
-            android:singleLine="false"
-            android:text="qtt"
+            android:text="@string/aguarde"
             android:textAlignment="center"
             android:textAppearance="@style/TextAppearance.AppCompat.Small"
             android:textColor="@color/md_grey_900"
@@ -54,8 +52,7 @@
             android:gravity="center_vertical|center_horizontal"
             android:paddingLeft="12dp"
             android:paddingRight="12dp"
-            android:singleLine="false"
-            android:text="dim"
+            android:text="@string/aguarde"
             android:textAppearance="@style/TextAppearance.AppCompat.Small"
             android:textColor="@color/md_grey_900" />
     </LinearLayout>
@@ -64,5 +61,5 @@
         android:id="@+id/bt_parcial"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="PARTE" />
+        android:text="@string/PARTE" />
 </LinearLayout>

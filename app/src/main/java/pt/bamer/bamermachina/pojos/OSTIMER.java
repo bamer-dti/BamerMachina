@@ -15,18 +15,6 @@ public class OSTIMER {
 
     }
 
-//    public OSTIMER(String bostamp, String bistamp, long lasttime, long unixtime, int posicao, String maquina, String operador, String seccao, String estado) {
-//        this.bostamp = bostamp;
-//        this.bistamp = bistamp;
-//        this.lasttime = lasttime;
-//        this.unixtime = unixtime;
-//        this.posicao = posicao;
-//        this.maquina = maquina;
-//        this.operador = operador;
-//        this.seccao = seccao;
-//        this.estado = estado;
-//    }
-
     @Override
     public String toString() {
         return "bostamp: " + bostamp

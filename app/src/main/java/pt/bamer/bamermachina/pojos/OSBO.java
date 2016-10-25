@@ -1,9 +1,5 @@
 package pt.bamer.bamermachina.pojos;
 
-///**
-// * Created by miguel.silva on 18-10-2016.
-// */
-@SuppressWarnings("unused")
 public class OSBO {
     public int cor;
     public String dtcortef;
