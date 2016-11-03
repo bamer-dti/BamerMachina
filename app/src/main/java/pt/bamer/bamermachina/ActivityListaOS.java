@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
@@ -14,7 +13,6 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -233,32 +231,6 @@ public class ActivityListaOS extends AppCompatActivity {
         super.onPause();
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_listaos, menu);
-        this.menu = menu;
-        boolean visi = MrApp.getPrefs().getBoolean(Constantes.PREF_MOSTRAR_OS_COMPLETOS, true);
-        menu.findItem(R.id.itemmenu_mostrar_tudo).setTitle(visi ? Constantes.MOSTRAR_TUDO : Constantes.MOSTRAR_FILTRADO);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.itemmenu_mostrar_tudo:
-                SharedPreferences prefs = MrApp.getPrefs();
-                boolean now = prefs.getBoolean(Constantes.PREF_MOSTRAR_OS_COMPLETOS, true);
-                SharedPreferences.Editor editor = prefs.edit();
-                editor.putBoolean(Constantes.PREF_MOSTRAR_OS_COMPLETOS, !now);
-                editor.commit();
-                actionbarSetup();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-
     private void emitirQtdProduzidaPorAvulso(Context context, int qtd) {
         int qtd_anterior = Integer.parseInt(bt_qtt_feita.getText().toString());
         try {
@@ -277,13 +249,6 @@ public class ActivityListaOS extends AppCompatActivity {
             e.printStackTrace();
             Funcoes.alerta(contextActivity, "ERRO", "Erro ao construir o objecto JSON.\nActivityListaOS - método emitirQtdProduzidaPorAvulso");
         }
-    }
-
-    private void actionbarSetup() {
-        SharedPreferences prefs = MrApp.getPrefs();
-        boolean vis = prefs.getBoolean(Constantes.PREF_MOSTRAR_OS_COMPLETOS, true);
-        menu.findItem(R.id.itemmenu_mostrar_tudo).setTitle(vis ? Constantes.MOSTRAR_TUDO : Constantes.MOSTRAR_FILTRADO);
-        osRecyclerAdapter.updateSourceData(bancadaTrabalho);
     }
 
     public LinearLayout getLl_working_os() {
@@ -415,7 +380,7 @@ public class ActivityListaOS extends AppCompatActivity {
                     osprod.bostamp = bostamp;
                     osprod.bistamp = dataSnapshotOSPROD.getKey();
                     listaOSPROD.add(osprod);
-                    Log.i(TAG, "osbostamp:  " + osprod.bostamp + ", bistamp = " + osprod.bistamp + ", qtt = " + osprod.qtt);
+                    Log.v(TAG, "osbostamp:  " + osprod.bostamp + ", bistamp = " + osprod.bistamp + ", qtt = " + osprod.qtt);
                 }
             }
             new DBSQLite(contextActivity).gravarOSPROD(listaOSPROD);

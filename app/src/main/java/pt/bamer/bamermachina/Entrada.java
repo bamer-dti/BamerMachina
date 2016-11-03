@@ -16,9 +16,6 @@ import java.util.Arrays;
 import pt.bamer.bamermachina.utils.Constantes;
 import pt.bamer.bamermachina.utils.ValoresDefeito;
 
-///**
-// * Created by miguel.silva on 09-08-2016.
-// */
 public class Entrada extends AppCompatActivity {
 
     private static final String TAG = Entrada.class.getSimpleName();

@@ -1,6 +1,5 @@
 package pt.bamer.bamermachina;
 
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.Paint;
@@ -37,10 +36,7 @@ import pt.bamer.bamermachina.utils.Constantes;
 public class Dossier extends AppCompatActivity {
     private static final String TAG = Dossier.class.getSimpleName();
     Dossier activity = this;
-    private RecyclerView recyclerViewDossier;
-    private Menu menu;
     private String bostamp;
-    private int modoOperacional;
     private SmoothProgressBar pb_smooth;
     private TarefaRecyclerAdapter tarefaRecyclerAdapter;
 
@@ -59,7 +55,7 @@ public class Dossier extends AppCompatActivity {
         paint.setAntiAlias(true);
         paint.setPathEffect(new DashPathEffect(new float[]{25.0f, 25.0f}, 0));
 
-        recyclerViewDossier = (RecyclerView) findViewById(R.id.recycler_view_dossier);
+        RecyclerView recyclerViewDossier = (RecyclerView) findViewById(R.id.recycler_view_dossier);
         recyclerViewDossier.addItemDecoration(
                 new HorizontalDividerItemDecoration.Builder(this).paint(paint).build());
         LinearLayoutManager mLayoutManager = new LinearLayoutManager(this);
@@ -72,7 +68,7 @@ public class Dossier extends AppCompatActivity {
 
         Bundle extras = getIntent().getExtras();
         bostamp = "";
-        modoOperacional = 0;
+        int modoOperacional = 0;
         if (extras != null) {
             bostamp = extras.getString(Constantes.INTENT_EXTRA_BOSTAMP);
             modoOperacional = extras.getInt(Constantes.INTENT_EXTRA_MODO_OPERACIONAL);
@@ -127,9 +123,6 @@ public class Dossier extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_listaos, menu);
-        this.menu = menu;
-        boolean visi = MrApp.getPrefs().getBoolean(Constantes.PREF_MOSTRAR_TODAS_LINHAS_PROD, true);
-        menu.findItem(R.id.itemmenu_mostrar_tudo).setTitle(visi ? Constantes.MOSTRAR_TUDO : Constantes.MOSTRAR_FILTRADO);
         return true;
     }
 
@@ -137,28 +130,12 @@ public class Dossier extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             // This is the up button
-            case R.id.itemmenu_mostrar_tudo:
-                SharedPreferences prefs = MrApp.getPrefs();
-                boolean now = prefs.getBoolean(Constantes.PREF_MOSTRAR_TODAS_LINHAS_PROD, true);
-                SharedPreferences.Editor editor = prefs.edit();
-                editor.putBoolean(Constantes.PREF_MOSTRAR_TODAS_LINHAS_PROD, !now);
-                editor.commit();
-                actionbarSetup();
-////                onBackPressed();
-//                return true;
-                return true;
             case android.R.id.home:
                 finish();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
-    }
-
-    private void actionbarSetup() {
-        SharedPreferences prefs = MrApp.getPrefs();
-        boolean vis = prefs.getBoolean(Constantes.PREF_MOSTRAR_TODAS_LINHAS_PROD, true);
-        menu.findItem(R.id.itemmenu_mostrar_tudo).setTitle(vis ? Constantes.MOSTRAR_TUDO : Constantes.MOSTRAR_FILTRADO);
     }
 
     private class TaskFirebaseOSBI extends AsyncTask<Void, Void, Void> {

@@ -2,7 +2,6 @@ package pt.bamer.bamermachina.utils;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.support.v4.content.ContextCompat;
 import android.view.View;
@@ -13,7 +12,6 @@ import android.widget.TextView;
 import java.util.Timer;
 
 import pt.bamer.bamermachina.ActivityListaOS;
-import pt.bamer.bamermachina.MrApp;
 import pt.bamer.bamermachina.R;
 import pt.bamer.bamermachina.adapters.OSRecyclerAdapter;
 import pt.bamer.bamermachina.database.DBSQLite;
@@ -104,13 +102,6 @@ public class AsyncTasks {
             tv_qttFeita.setText("" + (qttProd == 0 ? "" : qttProd));
             if (qtt == qttProd) {
                 ll_root.setBackgroundColor(ContextCompat.getColor(ll_root.getContext(), R.color.md_blue_grey_500));
-                SharedPreferences prefs = MrApp.getPrefs();
-                boolean mostra = prefs.getBoolean(Constantes.PREF_MOSTRAR_OS_COMPLETOS, true);
-                if (!mostra) {
-                    osRecyclerAdapter.getListaOSBO().remove(position);
-                    osRecyclerAdapter.notifyItemRemoved(position);
-                    osRecyclerAdapter.notifyItemRangeChanged(position, osRecyclerAdapter.getListaOSBO().size());
-                }
             } else {
                 ll_root.setBackgroundColor(Color.WHITE);
             }

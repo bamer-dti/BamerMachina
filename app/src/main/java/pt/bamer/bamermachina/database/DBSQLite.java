@@ -18,7 +18,7 @@ import pt.bamer.bamermachina.pojos.OSTIMER;
 public class DBSQLite extends SQLiteOpenHelper {
     private static final String TAG = DBSQLite.class.getSimpleName();
     private static final String DATABASE_NAME = "opsec";
-    private static final int DATABASE_VERSION = 6;
+    private static final int DATABASE_VERSION = 7;
 
     private static final String TABELA_OSBO = "osbo";
     private static final String TABELA_OSBI = "osbi";
@@ -104,7 +104,9 @@ public class DBSQLite extends SQLiteOpenHelper {
             + OPERADOR + " text not null, "
             + LASTTIME + " real not null, "
             + POSICAO + " integer not null, "
-            + UNIXTIME + " real not null "
+            + UNIXTIME + " real not null, "
+            + OBRANO + " integer not null, "
+            + FREF + " text not null "
             + ")";
     private static String TABELA_OSPROD = "osprod";
     private static final String DATABASE_CREATE_TABLE_OSPROD = "Create Table " + TABELA_OSPROD + "("
@@ -256,6 +258,8 @@ public class DBSQLite extends SQLiteOpenHelper {
             contentValues.put(ESTADO, ostimer.estado);
             contentValues.put(MAQUINA, ostimer.maquina);
             contentValues.put(OPERADOR, ostimer.operador);
+            contentValues.put(OBRANO, ostimer.obrano);
+            contentValues.put(FREF, ostimer.fref);
             db.insert(TABELA_OSTIMER, null, contentValues);
         }
         db.setTransactionSuccessful();
@@ -312,8 +316,13 @@ public class DBSQLite extends SQLiteOpenHelper {
     public ArrayList<OSBO> getOSBOOrdered() {
         SQLiteDatabase db = getReadableDatabase();
         ArrayList<OSBO> lista = new ArrayList<>();
-        Cursor cursor = db.query(TABELA_OSBO, new String[]{BOSTAMP, COR, DTCLIENTE, DTCORTEF, DTEMBALA, DTEXPEDI, DTTRANSF, ESTADO, FREF, NMFREF, OBRANO, OBS, ORDEM, SECCAO}
-                , "", null, "", "", DTCORTEF + ", " + ORDEM
+        Cursor cursor = db.query(TABELA_OSBO
+                , new String[]{BOSTAMP, COR, DTCLIENTE, DTCORTEF, DTEMBALA, DTEXPEDI, DTTRANSF, ESTADO, FREF, NMFREF, OBRANO, OBS, ORDEM, SECCAO}
+                , ""
+                , null
+                , ""
+                , ""
+                , DTCORTEF + ", " + ORDEM
         );
         if (cursor.moveToFirst()) {
             do {

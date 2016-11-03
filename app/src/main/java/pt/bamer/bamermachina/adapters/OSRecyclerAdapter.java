@@ -3,7 +3,6 @@ package pt.bamer.bamermachina.adapters;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -24,7 +23,6 @@ import java.util.ArrayList;
 import pt.bamer.bamermachina.ActivityListaOS;
 import pt.bamer.bamermachina.BancadaTrabalho;
 import pt.bamer.bamermachina.Dossier;
-import pt.bamer.bamermachina.MrApp;
 import pt.bamer.bamermachina.R;
 import pt.bamer.bamermachina.database.DBSQLite;
 import pt.bamer.bamermachina.pojos.JSONObjectTimer;
@@ -159,6 +157,33 @@ public class OSRecyclerAdapter extends RecyclerView.Adapter implements View.OnCl
         }
     }
 
+    private class UpdateSourceTask extends AsyncTask<Void, Void, Void> {
+
+        private final BancadaTrabalho bancadaTrabalho;
+
+        public UpdateSourceTask(BancadaTrabalho bancadaTrabalho) {
+            this.bancadaTrabalho = bancadaTrabalho;
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            listaOSBO = new DBSQLite(context).getOSBOOrdered();
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            ((ActivityListaOS) context).runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    notifyDataSetChanged();
+                    bancadaTrabalho.actualizarDados();
+                }
+            });
+        }
+
+    }
+
     public class ViewHolder extends RecyclerView.ViewHolder {
         private final TextView tv_fref;
         private final TextView tv_obrano;
@@ -199,46 +224,6 @@ public class OSRecyclerAdapter extends RecyclerView.Adapter implements View.OnCl
 
         public TextView getTv_temporal() {
             return tv_temporal;
-        }
-    }
-
-    private class UpdateSourceTask extends AsyncTask<Void, Void, Void> {
-        private final BancadaTrabalho bancadaTrabalho;
-
-        public UpdateSourceTask(BancadaTrabalho bancadaTrabalho) {
-            this.bancadaTrabalho = bancadaTrabalho;
-        }
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            ArrayList<OSBO> lista = new DBSQLite(context).getOSBOOrdered();
-            SharedPreferences prefs = MrApp.getPrefs();
-            boolean mostrarTodos = prefs.getBoolean(Constantes.PREF_MOSTRAR_OS_COMPLETOS, true);
-            Log.i(TAG, "mostrarTodos = " + mostrarTodos);
-            if (mostrarTodos) {
-                listaOSBO = lista;
-            } else {
-                for (OSBO osbo : lista) {
-                    String bostamp = osbo.bostamp;
-                    int qtt = new DBSQLite(context).getQtdBostamp(bostamp);
-                    int qttProd = new DBSQLite(context).getQtdProdBostamp(bostamp);
-                    if (qtt != qttProd) {
-                        listaOSBO.add(osbo);
-                    }
-                }
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            ((ActivityListaOS) context).runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    notifyDataSetChanged();
-                    bancadaTrabalho.actualizarDados();
-                }
-            });
         }
     }
 }

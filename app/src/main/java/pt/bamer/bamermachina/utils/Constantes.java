@@ -13,7 +13,6 @@ public class Constantes {
 
     public static final String ESTADO_CORTE = "01 - CORTE";
 
-    public static final String PREF_MOSTRAR_OS_COMPLETOS = "pref_mostrar_os_completos";
     public static final String MOSTRAR_TUDO = "TUDO";
     public static final String MOSTRAR_FILTRADO = "FILTRADO";
     public static final String PREF_MOSTRAR_TODAS_LINHAS_PROD = "pref_mostrar_todas_linhas_prod";
