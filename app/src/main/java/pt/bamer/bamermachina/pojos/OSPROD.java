@@ -15,5 +15,5 @@ public class OSPROD {
                 + ", ref: " + ref + ", design: " + design + ", dim: " + dim + ", mk: " + mk;
 
     }
-    
+
 }

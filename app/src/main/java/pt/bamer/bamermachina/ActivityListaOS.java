@@ -12,7 +12,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -53,7 +52,6 @@ public class ActivityListaOS extends AppCompatActivity {
     private Button bt_qtt_feita;
     private ActivityListaOS contextActivity = this;
     private RecyclerView recyclerView;
-    private Menu menu;
     private SmoothProgressBar pb_smooth;
     private OSRecyclerAdapter osRecyclerAdapter;
     private BancadaTrabalho bancadaTrabalho;

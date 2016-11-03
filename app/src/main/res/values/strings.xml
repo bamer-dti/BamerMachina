@@ -2,7 +2,7 @@
     <string name="app_name">Bamer Maquina 1.0.0</string>
     <string name="seccao">Secção</string>
     <string name="toolbarTitle">Toolbar text</string>
-    <string name="aguarde">aguarde…</string>
+    <string name="aguarde">…</string>
     <string name="opcoes_upper">OPÇÕES</string>
     <string name="stop_upper">STOP</string>
     <string name="iniciar_upper">INICIAR</string>

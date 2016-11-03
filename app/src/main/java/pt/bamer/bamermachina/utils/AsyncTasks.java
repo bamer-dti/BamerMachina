@@ -53,11 +53,11 @@ public class AsyncTasks {
         protected void onPostExecute(Void aVoid) {
             if (timer == null) {
                 bt_posicao.setVisibility(View.VISIBLE);
-                bt_alertas.setVisibility(View.VISIBLE);
+                bt_alertas.setVisibility(View.GONE);
 
             } else {
                 bt_posicao.setVisibility(View.INVISIBLE);
-                bt_alertas.setVisibility(View.INVISIBLE);
+                bt_alertas.setVisibility(View.GONE);
             }
             String texto = bt_posicao.getContext().getString(R.string.iniciar_upper);
             texto = posicaoSQL == Constantes.MODO_STOPED ? bt_posicao.getContext().getString(R.string.continuar_upper) : texto;

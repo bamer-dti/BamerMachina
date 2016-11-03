@@ -17,8 +17,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:orientation="horizontal"
-            android:baselineAligned="false">
+            android:baselineAligned="false"
+            android:orientation="horizontal">
 
             <LinearLayout
                 android:layout_width="fill_parent"
@@ -40,8 +40,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/aguarde"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:textColor="@color/md_light_green_800" />
+                    android:textColor="@color/md_light_green_800"
+                    android:textSize="@dimen/tamanho_texto_lista_os_big" />
 
                 <TextView
                     android:id="@+id/tv_descricao"
@@ -67,11 +67,12 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:gravity="end"
-                        android:paddingStart="0dp"
                         android:paddingEnd="10dp"
+                        android:paddingStart="0dp"
                         android:text="CRT"
                         android:textAppearance="?android:attr/textAppearanceSmall"
-                        android:textColor="@color/md_grey_900" />
+                        android:textColor="@color/md_grey_900"
+                        tools:ignore="HardcodedText" />
 
                     <TextView
                         android:id="@+id/tv_dtcortef"
@@ -91,11 +92,12 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:gravity="end"
-                        android:paddingStart="0dp"
                         android:paddingEnd="10dp"
+                        android:paddingStart="0dp"
                         android:text="TRF"
                         android:textAppearance="?android:attr/textAppearanceSmall"
-                        android:textColor="@color/md_grey_900" />
+                        android:textColor="@color/md_grey_900"
+                        tools:ignore="HardcodedText" />
 
                     <TextView
                         android:id="@+id/tv_dttransf"
@@ -113,8 +115,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:orientation="horizontal"
-            android:baselineAligned="false">
+            android:baselineAligned="false"
+            android:orientation="horizontal">
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -132,8 +134,8 @@
                     android:gravity="center_vertical|end"
                     android:padding="5dp"
                     android:text="@string/aguarde"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:textColor="@color/md_grey_900" />
+                    android:textColor="@color/md_grey_900"
+                    android:textSize="@dimen/tamanho_texto_lista_os_big" />
 
                 <TextView
                     android:id="@+id/tv_qttfeita"
@@ -143,26 +145,26 @@
                     android:gravity="fill_vertical|end"
                     android:padding="10dp"
                     android:text="@string/aguarde"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:textColor="@color/md_blue_800" />
+                    android:textColor="@color/md_blue_800"
+                    android:textSize="@dimen/tamanho_texto_lista_os_big" />
 
                 <TextView
                     android:id="@+id/tv_temporal"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="0dp"
                     android:layout_marginEnd="40dp"
+                    android:layout_marginStart="0dp"
                     android:layout_weight="1"
                     android:gravity="center_vertical|end"
-                    android:text="aguarde..."
+                    android:text="@string/aguarde"
                     android:textColor="@color/md_purple_600" />
             </LinearLayout>
 
             <TableLayout
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:layout_marginStart="0dp"
-                android:layout_marginEnd="5dp">
+                android:layout_marginEnd="5dp"
+                android:layout_marginStart="0dp">
 
                 <TableRow
                     android:layout_width="match_parent"
@@ -172,8 +174,8 @@
                     <Button
                         android:id="@+id/bt_posicao"
                         style="?android:attr/buttonStyleSmall"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_width="@dimen/tamanho_botao_tarefa_width"
+                        android:layout_height="@dimen/tamanho_botao_tarefa_height"
                         android:text="@string/iniciar_upper" />
                 </TableRow>
 
@@ -185,9 +187,10 @@
                     <Button
                         android:id="@+id/bt_alertas"
                         style="?android:attr/buttonStyleSmall"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/opcoes_upper" />
+                        android:layout_width="@dimen/tamanho_botao_tarefa_width"
+                        android:layout_height="@dimen/tamanho_botao_tarefa_height"
+                        android:text="@string/opcoes_upper"
+                        android:visibility="gone" />
                 </TableRow>
             </TableLayout>
         </LinearLayout>
