@@ -224,6 +224,7 @@ public class ActivityListaOS extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        bancadaTrabalho.actualizarDados();
     }
 
     @Override

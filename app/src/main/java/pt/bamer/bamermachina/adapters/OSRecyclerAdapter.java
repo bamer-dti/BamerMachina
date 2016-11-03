@@ -181,7 +181,6 @@ public class OSRecyclerAdapter extends RecyclerView.Adapter implements View.OnCl
                 }
             });
         }
-
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

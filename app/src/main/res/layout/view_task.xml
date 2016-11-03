@@ -11,8 +11,8 @@
 
     <Button
         android:id="@+id/bt_total"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="@dimen/tamanho_botao_tarefa_width"
+        android:layout_height="@dimen/tamanho_botao_tarefa_height"
         android:text="@string/TOTAL" />
 
     <TextView
@@ -59,7 +59,7 @@
 
     <Button
         android:id="@+id/bt_parcial"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="@dimen/tamanho_botao_tarefa_width"
+        android:layout_height="@dimen/tamanho_botao_tarefa_height"
         android:text="@string/PARTE" />
 </LinearLayout>

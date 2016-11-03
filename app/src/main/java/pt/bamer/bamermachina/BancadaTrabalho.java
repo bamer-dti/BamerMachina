@@ -47,6 +47,7 @@ public class BancadaTrabalho {
             }
             if (posicao == 1) {
                 adapter.removerOSBO(osbo.bostamp);
+                bt_qtt_feita.setText("" + new DBSQLite(activityListaOS).getQtdProdBostamp(osbo.bostamp));
                 return;
             }
             if (posicao == 2) {//STOPPED!!!

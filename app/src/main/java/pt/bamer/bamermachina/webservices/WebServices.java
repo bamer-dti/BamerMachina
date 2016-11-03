@@ -1,8 +1,6 @@
 package pt.bamer.bamermachina.webservices;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
-import android.content.Context;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
@@ -22,8 +20,8 @@ import pt.bamer.bamermachina.pojos.JSONObjectTimer;
 import pt.bamer.bamermachina.utils.Funcoes;
 
 public class WebServices {
-    //    public static final String SERVER_WEBSERVICES = "http://192.168.0.1:99/bameros.svc/";
-    public static final String SERVER_WEBSERVICES = "http://server.bamer.pt:99/bameros.svc/";
+        public static final String SERVER_WEBSERVICES = "http://192.168.0.1:99/bameros.svc/";
+//    public static final String SERVER_WEBSERVICES = "http://server.bamer.pt:99/bameros.svc/";
     public static final String JSON_URL_REGISTAR_TEMPO = SERVER_WEBSERVICES + "registartempo";
     public static final String JSON_URL_REGISTAR_QTD = SERVER_WEBSERVICES + "registarqtd";
     private static final String TAG = WebServices.class.getSimpleName();
@@ -85,52 +83,6 @@ public class WebServices {
                 });
     }
 
-    @SuppressWarnings("unused")
-    private static void lancarTempoEmCouch(final Context context, final JSONObjectTimer jsonObject, final String idcouch, final ProgressDialog dialog) {
-        Log.i(TAG, "Json\n" + jsonObject.toString());
-//        AndroidNetworking.put(ServicoCouchBase.COUCH_SERVER_AND_DB_URL + idcouch)
-//                .addJSONObjectBody(jsonObject)
-//                .setTag("test")
-//                .addHeaders("Content-Type", "application/json")
-//                .addHeaders("Authorization", "Basic c3luY3VzZXI6U3luY1VzZXIjMTAh")
-//                .addHeaders("If-Match", "")
-//                .addHeaders("Content-Length", "" + jsonObject.toString().length())
-//                .setPriority(Priority.MEDIUM)
-//                .build()
-//                .getAsJSONObject(new JSONObjectRequestListener() {
-//
-//                    @Override
-//                    public void onResponse(JSONObject response) {
-//                        try {
-//                            Log.i(TAG, "resposta  = " + response.getBoolean("ok"));
-//                        } catch (JSONException e) {
-//                            e.printStackTrace();
-//                        }
-//                        dismissDialog(dialog);
-////                        if (jsonObject.getPosicao() == Constantes.MODO_STARTED) {
-////                            ActivityListaOS.ColocarOSemTrabalhoAposWebService((ActivityListaOS) context, jsonObject);
-//////                            ActivityListaOS.retirarRegistoDaLista((ActivityListaOS) context, jsonObject);
-////                        } else {
-////                            ActivityListaOS.pararCronometro((ActivityListaOS) context);
-////                        }
-//                    }
-//
-//                    @Override
-//                    public void onError(ANError error) {
-//                        if (error.getErrorCode() != 0) {
-//                            Log.e(TAG, "onError errorCode : " + error.getErrorCode());
-//                            Log.e(TAG, "onError errorBody : " + error.getErrorBody());
-//                            Log.e(TAG, "onError errorDetail : " + error.getErrorDetail());
-//                        } else {
-//                            // error.getErrorDetail() : connectionError, parseError, requestCancelledError
-//                            Log.e(TAG, "onError errorDetail : " + error.getErrorDetail());
-//                        }
-//                        dismissDialog(dialog);
-//                        Funcoes.alerta(context, "Erro", "Ocorreu um erro ao gravar via webservice.\nTente novamente. Se o erro persistir, contacte o DTI: " + error.getErrorDetail());
-//                    }
-//                });
-    }
-
     public static void registarQtdEmSQL(final Activity activity, final Object viewOrigem, final int qtd_total, final int qtd, final JSONObjectQtd jsonObjectQtd) {
         MrApp.mostrarAlertToWait(activity, "A gravar no servidor, aguarde...");
         Log.w(TAG, "JSON OSPROD:\n" + jsonObjectQtd.toString());
@@ -144,6 +96,7 @@ public class WebServices {
                 .getAsJSONObject(new JSONObjectRequestListener() {
                     @Override
                     public void onResponse(JSONObject response) {
+                        MrApp.esconderAlertToWait(activity);
                         try {
                             boolean resultado = response.getBoolean(JSON_OK);
                             String mensagem = response.getString(JSON_MENSAGEM);
@@ -156,11 +109,7 @@ public class WebServices {
                                     if (viewOrigem instanceof Button) {
                                         Button but = (Button) viewOrigem;
                                         but.setText((qtd + qtd_total) + "");
-                                        MrApp.esconderAlertToWait(activity);
                                     }
-//                                    if (viewOrigem instanceof TarefaRecyclerAdapter.ViewHolder) {
-//                                        MrApp.mostrarAlertToWait(activity, "A obter dados do servidor, aguarde...");
-//                                    }
                                 }
                             }
                         } catch (JSONException e) {

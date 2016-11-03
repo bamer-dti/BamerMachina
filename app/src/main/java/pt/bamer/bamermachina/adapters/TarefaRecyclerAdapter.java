@@ -17,6 +17,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONException;
 
@@ -74,6 +75,7 @@ public class TarefaRecyclerAdapter extends RecyclerView.Adapter {
 
         viewHolder.tv_dim.setText(dim + (mk.equals("") ? "" : ", mk " + mk));
 
+        //BOTÃO TOTAL
         if (modoOperacional == Constantes.MODO_STARTED) {
             viewHolder.bt_total.setVisibility(hideButs ? View.VISIBLE : View.GONE);
             viewHolder.bt_total.setOnClickListener(new View.OnClickListener() {
@@ -91,6 +93,7 @@ public class TarefaRecyclerAdapter extends RecyclerView.Adapter {
             viewHolder.bt_total.setVisibility(View.GONE);
         }
 
+        //BOTÃO PARCIAL
         if (modoOperacional == Constantes.MODO_STARTED) {
             viewHolder.bt_parcial.setVisibility(hideButs ? View.VISIBLE : View.GONE);
             viewHolder.bt_parcial.setOnClickListener(new View.OnClickListener() {
@@ -105,17 +108,26 @@ public class TarefaRecyclerAdapter extends RecyclerView.Adapter {
                     final EditText userInput = (EditText) promptsView.findViewById(R.id.et_qtt);
 
                     final int qttTotal = osbi.qtt;
-                    int qttParcial = 0;
-                    int qttRestante = qttTotal - qttParcial;
-                    userInput.setHint("" + qttRestante);
-                    userInput.setText("" + qttRestante);
+                    int qttParcial = new DBSQLite(activityDossier).getQtdProdBistamp(osbi);
+                    final int qttRestante = qttTotal - qttParcial;
+                    userInput.setHint(qttRestante + "");
                     userInput.setSelection(userInput.getText().length());
                     alertDialogBuilder
                             .setCancelable(false)
                             .setPositiveButton("OK",
                                     new DialogInterface.OnClickListener() {
                                         public void onClick(DialogInterface dialog, int id) {
-                                            int qttEfectuada = Integer.parseInt(userInput.getText().toString());
+                                            String valor = userInput.getText().toString();
+                                            valor = valor.equals("") ? "0" : valor;
+                                            int qttEfectuada = Integer.parseInt(valor);
+                                            if (qttEfectuada <= 0) {
+                                                Toast.makeText(activityDossier, "Não pode gravar quantidade inferior ou igual a zero!", Toast.LENGTH_LONG).show();
+                                                return;
+                                            }
+                                            if (qttEfectuada > qttRestante) {
+                                                Toast.makeText(activityDossier, "Não pode gravar quantidade superior a " + qttRestante + "!", Toast.LENGTH_LONG).show();
+                                                return;
+                                            }
                                             try {
                                                 WebServices.registarQtdEmSQL(activityDossier, viewHolder, qttTotal, qttEfectuada, new JSONObjectQtd(bostamp, dim, mk, ref, design, qttEfectuada));
                                             } catch (JSONException e) {
@@ -150,28 +162,28 @@ public class TarefaRecyclerAdapter extends RecyclerView.Adapter {
         return num;
     }
 
-    public void actualizarQtdProd(String bostamp, String dim, String mk, String ref, String design) {
-        for (int i = 0; i < listaOSBI.size(); i++) {
-            OSBI osbi = listaOSBI.get(i);
-            String bostamp_ = osbi.bostamp;
-            String dim_ = osbi.dim;
-            String mk_ = osbi.mk;
-            String ref_ = osbi.ref;
-            String design_ = osbi.design;
-            if (bostamp_.equals(bostamp)) {
-                if (dim_.equals(dim)) {
-                    if (mk_.equals(mk)) {
-                        if (ref_.equals(ref)) {
-                            if (design_.equals(design)) {
-                                Log.i(TAG, "Actualizar quantidade produzida na posição " + i);
-                                notifyItemChanged(i);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
+//    public void actualizarQtdProd(String bostamp, String dim, String mk, String ref, String design) {
+//        for (int i = 0; i < listaOSBI.size(); i++) {
+//            OSBI osbi = listaOSBI.get(i);
+//            String bostamp_ = osbi.bostamp;
+//            String dim_ = osbi.dim;
+//            String mk_ = osbi.mk;
+//            String ref_ = osbi.ref;
+//            String design_ = osbi.design;
+//            if (bostamp_.equals(bostamp)) {
+//                if (dim_.equals(dim)) {
+//                    if (mk_.equals(mk)) {
+//                        if (ref_.equals(ref)) {
+//                            if (design_.equals(design)) {
+//                                Log.i(TAG, "Actualizar quantidade produzida na posição " + i);
+//                                notifyItemChanged(i);
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
 
     public void updateSource(ArrayList<OSBI> lista) {
         listaOSBI = lista;
