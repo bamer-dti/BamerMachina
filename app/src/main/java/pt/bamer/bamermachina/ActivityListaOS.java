@@ -242,7 +242,7 @@ public class ActivityListaOS extends AppCompatActivity {
             String ref = "";
             String design = "Qtd Avulso";
             String bostamp = bancadaTrabalho.getOsbo().bostamp;
-            JSONObjectQtd jsonObjectQtd = new JSONObjectQtd(bostamp, dim, mk, ref, design, qtd);
+            JSONObjectQtd jsonObjectQtd = new JSONObjectQtd(bostamp, dim, mk, ref, design, qtd, "");
             WebServices.registarQtdEmSQL(contextActivity, bt_qtt_feita, qtd_anterior, qtd, jsonObjectQtd);
         } catch (JSONException e) {
             e.printStackTrace();

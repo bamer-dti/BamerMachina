@@ -37,4 +37,5 @@ public class Constantes {
     public static final String NODE_OSBI = "osbi03";
     public static final String NODE_OSPROD = "osprod";
     public static final String NODE_OSTIMER = "ostimer";
+    public static final String FIELD_NUMLINHA = "posic";
 }

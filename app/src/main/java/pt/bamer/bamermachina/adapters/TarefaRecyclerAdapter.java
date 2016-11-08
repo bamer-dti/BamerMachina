@@ -75,15 +75,17 @@ public class TarefaRecyclerAdapter extends RecyclerView.Adapter {
 
         viewHolder.tv_dim.setText(dim + (mk.equals("") ? "" : ", mk " + mk));
 
+        viewHolder.tv_numlinha.setText(osbi.numlinha);
+
         //BOTÃO TOTAL
         if (modoOperacional == Constantes.MODO_STARTED) {
             viewHolder.bt_total.setVisibility(hideButs ? View.VISIBLE : View.GONE);
             viewHolder.bt_total.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    int qtd = 0;
+                    int qtd = osbi.qtt;
                     try {
-                        WebServices.registarQtdEmSQL(activityDossier, viewHolder, qtd, qtd, new JSONObjectQtd(bostamp, dim, mk, ref, design, qtd));
+                        WebServices.registarQtdEmSQL(activityDossier, viewHolder, qtd, qtd, new JSONObjectQtd(bostamp, dim, mk, ref, design, qtd, osbi.numlinha));
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -129,7 +131,7 @@ public class TarefaRecyclerAdapter extends RecyclerView.Adapter {
                                                 return;
                                             }
                                             try {
-                                                WebServices.registarQtdEmSQL(activityDossier, viewHolder, qttTotal, qttEfectuada, new JSONObjectQtd(bostamp, dim, mk, ref, design, qttEfectuada));
+                                                WebServices.registarQtdEmSQL(activityDossier, viewHolder, qttTotal, qttEfectuada, new JSONObjectQtd(bostamp, dim, mk, ref, design, qttEfectuada, osbi.numlinha));
                                             } catch (JSONException e) {
                                                 e.printStackTrace();
                                             }
@@ -235,6 +237,7 @@ public class TarefaRecyclerAdapter extends RecyclerView.Adapter {
         private final Button bt_parcial;
         private final LinearLayout llinha;
         private final Context contextHolder;
+        private final TextView tv_numlinha;
 
         //        public ViewHolder(View itemView, int ViewType) {
         public ViewHolder(View itemView) {
@@ -244,6 +247,7 @@ public class TarefaRecyclerAdapter extends RecyclerView.Adapter {
             tv_ref = (TextView) itemView.findViewById(R.id.tv_ref);
             tv_qtt = (TextView) itemView.findViewById(R.id.tv_qtt);
             tv_dim = (TextView) itemView.findViewById(R.id.tv_dim);
+            tv_numlinha = (TextView) itemView.findViewById(R.id.tv_numlinha);
 
             bt_total = (Button) itemView.findViewById(R.id.bt_total);
             bt_parcial = (Button) itemView.findViewById(R.id.bt_parcial);

@@ -40,7 +40,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/aguarde"
-                    android:textColor="@color/md_light_green_800"
+                    android:textColor="@color/md_deep_orange_300"
                     android:textSize="@dimen/tamanho_texto_lista_os_big" />
 
                 <TextView

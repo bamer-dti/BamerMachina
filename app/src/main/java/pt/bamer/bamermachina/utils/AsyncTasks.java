@@ -73,19 +73,15 @@ public class AsyncTasks {
         private final TextView tv_qtt;
         private final TextView tv_qttFeita;
         private final LinearLayout ll_root;
-        private final OSRecyclerAdapter osRecyclerAdapter;
-        private final int position;
         private final Context context;
         private int qtt;
         private int qttProd;
 
-        public TaskCalculoQtt(String bostamp, TextView tv_qtt, TextView tv_qttFeita, LinearLayout ll_root, OSRecyclerAdapter adapter, int position) {
+        public TaskCalculoQtt(String bostamp, TextView tv_qtt, TextView tv_qttFeita, LinearLayout ll_root) {
             this.bostamp = bostamp;
             this.tv_qtt = tv_qtt;
             this.tv_qttFeita = tv_qttFeita;
             this.ll_root = ll_root;
-            this.osRecyclerAdapter = adapter;
-            this.position = position;
             this.context = ll_root.getContext();
         }
 
@@ -101,7 +97,7 @@ public class AsyncTasks {
             tv_qtt.setText("" + qtt);
             tv_qttFeita.setText("" + (qttProd == 0 ? "" : qttProd));
             if (qtt == qttProd) {
-                ll_root.setBackgroundColor(ContextCompat.getColor(ll_root.getContext(), R.color.md_blue_grey_500));
+                ll_root.setBackgroundColor(ContextCompat.getColor(ll_root.getContext(), R.color.md_blue_grey_200));
             } else {
                 ll_root.setBackgroundColor(Color.WHITE);
             }

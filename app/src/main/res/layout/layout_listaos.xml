@@ -41,7 +41,8 @@
             android:layout_margin="5dp"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="OS XXXXXX" />
+            android:text="OS XXXXXX"
+            android:textSize="@dimen/tamanho_texto_lista_os_big" />
 
         <TextView
             android:id="@+id/tv_qtt_total"

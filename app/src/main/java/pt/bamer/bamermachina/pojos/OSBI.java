@@ -11,8 +11,13 @@ public class OSBI {
     public String tipo;
     public String bostamp;
     public String bistamp;
+    public String numlinha = "";
 
-    public OSBI(String ref, String design, int qtt, String dim, String mk, String bostamp, String bistamp, String familia, String tipo) {
+    public OSBI() {
+
+    }
+
+    public OSBI(String ref, String design, int qtt, String dim, String mk, String bostamp, String bistamp, String familia, String tipo, String numlinha) {
         this.ref = ref;
         this.design = design;
         this.qtt = qtt;
@@ -22,10 +27,7 @@ public class OSBI {
         this.bistamp = bistamp;
         this.familia = familia;
         this.tipo = tipo;
-    }
-
-    public OSBI() {
-
+        this.numlinha = numlinha;
     }
 
     @Override
@@ -39,6 +41,7 @@ public class OSBI {
                 + ", tipo: " + tipo
                 + ", bostamp: " + bostamp
                 + ", bistamp: " + bistamp
+                + ", numlinha: " + numlinha
                 ;
     }
 }

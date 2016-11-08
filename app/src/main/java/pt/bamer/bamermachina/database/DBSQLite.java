@@ -18,13 +18,14 @@ import pt.bamer.bamermachina.pojos.OSTIMER;
 public class DBSQLite extends SQLiteOpenHelper {
     private static final String TAG = DBSQLite.class.getSimpleName();
     private static final String DATABASE_NAME = "opsec";
-    private static final int DATABASE_VERSION = 7;
+    private static final int DATABASE_VERSION = 9;
 
     private static final String TABELA_OSBO = "osbo";
     private static final String TABELA_OSBI = "osbi";
+    private static final String TABELA_OSPROD = "osprod";
     private static final String TABELA_OSBI_PARCIAL = "osbip";
-    private static final String TABELA_OSTIMER = "ostimer";
 
+    private static final String TABELA_OSTIMER = "ostimer";
     private static final String COLID = "_id";
     private static final String BOSTAMP = "bostamp";
     private static final String BISTAMP = "bistamp";
@@ -53,6 +54,7 @@ public class DBSQLite extends SQLiteOpenHelper {
     private static final String MAQUINA = "maquina";
     private static final String OPERADOR = "operador";
     private static final String SECCAO = "seccao";
+    private static final String NUMLINHA = "numlinha";
     private static final String DATABASE_CREATE_TABLE_OSBO = "Create Table " + TABELA_OSBO + "("
             + COLID + " integer primary key autoincrement, "
             + COR + " integer not null, "
@@ -80,7 +82,8 @@ public class DBSQLite extends SQLiteOpenHelper {
             + REF + " real not null, "
             + TIPO + " real not null, "
             + BOSTAMP + " text not null, "
-            + BISTAMP + " text not null "
+            + BISTAMP + " text not null, "
+            + NUMLINHA + " text not null "
             + ")";
     private static final String DATABASE_CREATE_TABLE_OSBI_PARCIAL = "Create Table " + TABELA_OSBI_PARCIAL + "("
             + COLID + " integer primary key autoincrement, "
@@ -92,7 +95,8 @@ public class DBSQLite extends SQLiteOpenHelper {
             + REF + " real not null, "
             + TIPO + " real not null, "
             + BOSTAMP + " text not null, "
-            + BISTAMP + " text not null "
+            + BISTAMP + " text not null, "
+            + NUMLINHA + " text not null "
             + ")";
     private static final String DATABASE_CREATE_TABLE_OSTIMER = "Create Table " + TABELA_OSTIMER + "("
             + COLID + " integer primary key autoincrement, "
@@ -108,7 +112,6 @@ public class DBSQLite extends SQLiteOpenHelper {
             + OBRANO + " integer not null, "
             + FREF + " text not null "
             + ")";
-    private static String TABELA_OSPROD = "osprod";
     private static final String DATABASE_CREATE_TABLE_OSPROD = "Create Table " + TABELA_OSPROD + "("
             + COLID + " integer primary key autoincrement, "
             + REF + " text not null, "
@@ -117,7 +120,8 @@ public class DBSQLite extends SQLiteOpenHelper {
             + MK + " text not null, "
             + QTT + " real not null, "
             + BOSTAMP + " text not null, "
-            + BISTAMP + " text not null "
+            + BISTAMP + " text not null, "
+            + NUMLINHA + " text not null "
             + ")";
 
     public DBSQLite(Context context) {
@@ -191,6 +195,7 @@ public class DBSQLite extends SQLiteOpenHelper {
             contentValues.put(TIPO, osbi.tipo);
             contentValues.put(BOSTAMP, osbi.bostamp);
             contentValues.put(BISTAMP, osbi.bistamp);
+            contentValues.put(NUMLINHA, osbi.numlinha);
             db.insert(TABELA_OSBI, null, contentValues);
         }
         db.setTransactionSuccessful();
@@ -214,6 +219,7 @@ public class DBSQLite extends SQLiteOpenHelper {
             contentValues.put(TIPO, osbi.tipo);
             contentValues.put(BOSTAMP, osbi.bostamp);
             contentValues.put(BISTAMP, osbi.bistamp);
+            contentValues.put(NUMLINHA, osbi.numlinha);
             db.insert(TABELA_OSBI_PARCIAL, null, contentValues);
         }
         db.setTransactionSuccessful();
@@ -235,6 +241,7 @@ public class DBSQLite extends SQLiteOpenHelper {
             contentValues.put(DESIGN, osprod.design);
             contentValues.put(DIM, osprod.dim);
             contentValues.put(MK, osprod.mk);
+            contentValues.put(NUMLINHA, osprod.numlinha);
             db.insert(TABELA_OSPROD, null, contentValues);
         }
         db.setTransactionSuccessful();
@@ -299,8 +306,8 @@ public class DBSQLite extends SQLiteOpenHelper {
     public int getQtdProdBistamp(OSBI osbi) {
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.query(TABELA_OSPROD, new String[]{"SUM(" + QTT + ") as " + QTT}
-                , REF + "=? AND " + DESIGN + "=? AND " + DIM + "=? AND " + MK + "=?"
-                , new String[]{osbi.ref, osbi.design, osbi.dim, osbi.mk}
+                , REF + "=? AND " + DESIGN + "=? AND " + DIM + "=? AND " + MK + "=? AND " + NUMLINHA + "=? AND " + BOSTAMP + "=?"
+                , new String[]{osbi.ref, osbi.design, osbi.dim, osbi.mk, osbi.numlinha, osbi.bostamp}
                 , "", "", "");
         int qtt = 0;
         if (cursor.moveToFirst()) {
@@ -467,11 +474,12 @@ public class DBSQLite extends SQLiteOpenHelper {
 
     public ArrayList<OSBI> getOSBIAgrupada() {
         SQLiteDatabase dbr = getReadableDatabase();
-        Cursor cursor = dbr.query(TABELA_OSBI_PARCIAL, new String[]{REF, DESIGN, "SUM(" + QTT + ") as " + QTT, DIM, MK, FAMILIA, TIPO, BOSTAMP}
+        Cursor cursor = dbr.query(TABELA_OSBI_PARCIAL, new String[]{REF, DESIGN, "SUM(" + QTT + ") as " + QTT, DIM, MK, NUMLINHA, FAMILIA, TIPO, BOSTAMP}
                 , ""
                 , null
-                , REF + ", " + DESIGN + ", " + DIM + ", " + MK + ", " + FAMILIA + ", " + TIPO + ", " + BOSTAMP
-                , "", DIM + ", " + MK + ", " + DESIGN);
+                , REF + ", " + DESIGN + ", " + DIM + ", " + MK + ", " + FAMILIA + ", " + TIPO + ", " + BOSTAMP + ", " + NUMLINHA
+                , ""
+                , DIM + ", " + MK + ", " + NUMLINHA + ", " + DESIGN);
         ArrayList<OSBI> listaAgrupada = new ArrayList<>();
         Log.w(TAG, "Cursor agrupado tem " + cursor.getCount());
         if (cursor.moveToNext()) {
@@ -485,7 +493,8 @@ public class DBSQLite extends SQLiteOpenHelper {
                 String bistamp = "";
                 String familia = cursor.getString(cursor.getColumnIndex(FAMILIA));
                 String tipo = cursor.getString(cursor.getColumnIndex(TIPO));
-                OSBI osbi = new OSBI(ref, design, qtt, dim, mk, bostamp, bistamp, familia, tipo);
+                String numlinha = cursor.getString(cursor.getColumnIndex(NUMLINHA));
+                OSBI osbi = new OSBI(ref, design, qtt, dim, mk, bostamp, bistamp, familia, tipo, numlinha);
                 listaAgrupada.add(osbi);
             } while (cursor.moveToNext());
         }

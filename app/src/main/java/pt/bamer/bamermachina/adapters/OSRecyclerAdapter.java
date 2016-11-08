@@ -84,7 +84,7 @@ public class OSRecyclerAdapter extends RecyclerView.Adapter implements View.OnCl
         localDateTime = Funcoes.cToT(dttransf);
         viewHolder.tv_dttransf.setText(dtf.print(localDateTime));
 
-        new AsyncTasks.TaskCalculoQtt(bostamp, viewHolder.tv_qtt, viewHolder.tv_qttfeita, viewHolder.ll_root, this, position).execute();
+        new AsyncTasks.TaskCalculoQtt(bostamp, viewHolder.tv_qtt, viewHolder.tv_qttfeita, viewHolder.ll_root).execute();
 
         viewHolder.bt_posicao.setVisibility(View.INVISIBLE);
         if (activityListaOS != null) {
@@ -135,10 +135,6 @@ public class OSRecyclerAdapter extends RecyclerView.Adapter implements View.OnCl
 
     private OSBO getItem(int position) {
         return listaOSBO != null ? listaOSBO.get(position) : null;
-    }
-
-    public ArrayList<OSBO> getListaOSBO() {
-        return listaOSBO;
     }
 
     public void updateSourceData(BancadaTrabalho bancadaTrabalho) {
