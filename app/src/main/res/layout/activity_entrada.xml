@@ -1,12 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:gravity="center"
     android:orientation="vertical">
+
+    <fr.castorflex.android.smoothprogressbar.SmoothProgressBar
+        android:id="@+id/pb_smooth"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:indeterminate="true"
+        app:spb_color="#FF0000"
+        app:spb_mirror_mode="false"
+        app:spb_progressiveStart_activated="true"
+        app:spb_progressiveStart_speed="1.5"
+        app:spb_progressiveStop_speed="3.4"
+        app:spb_reversed="false"
+        app:spb_sections_count="4"
+        app:spb_speed="2.0"
+        app:spb_stroke_separator_length="4dp"
+        app:spb_stroke_width="4dp" />
+
     <TableLayout
+        android:id="@+id/tbl"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
@@ -30,7 +48,6 @@
                 android:id="@+id/spinn_seccao"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:entries="@array/array_seccao"
                 android:padding="10dp"
                 android:prompt="@string/seccao"
                 android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
@@ -70,7 +87,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:padding="10dp"
-                android:text="@string/funcionario"
+                android:text="@string/operadorCodigo"
                 android:textAppearance="?android:attr/textAppearanceLarge" />
 
             <Spinner
@@ -95,12 +112,5 @@
                 android:padding="40dp"
                 android:text="@string/ok" />
         </TableRow>
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-        </TableRow>
-
     </TableLayout>
 </RelativeLayout>

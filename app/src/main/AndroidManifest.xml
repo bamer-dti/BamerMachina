@@ -14,14 +14,15 @@
         tools:ignore="AllowBackup,GoogleAppIndexingWarning">
         <activity
             android:name=".Entrada"
-            android:clearTaskOnLaunch="true">
+            android:clearTaskOnLaunch="true"
+            android:screenOrientation="sensorLandscape">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".Dossier" />
-        <activity android:name=".ActivityListaOS"/>
+        <activity android:name=".Dossier" android:screenOrientation="sensorLandscape"/>
+        <activity android:name=".ActivityListaOS" android:screenOrientation="sensorLandscape"/>
     </application>
 
 </manifest>

@@ -15,7 +15,7 @@ public class JSONObjectTimer extends JSONObject {
         put(Constantes.FIELD_BOSTAMP, bostamp);
         put(Constantes.FIELD_BISTAMP, bistamp);
         put(Constantes.FIELD_MAQUINA, MrApp.getMaquina());
-        put(Constantes.FIELD_OPERADOR, MrApp.getOperador());
+        put(Constantes.FIELD_OPERADOR, MrApp.getOperadorCodigo());
         put(Constantes.FIELD_ESTADO, estado);
         put(Constantes.FIELD_POSICAO, "" + posicao);
         put(Constantes.FIELD_TIPO, "ostimer");

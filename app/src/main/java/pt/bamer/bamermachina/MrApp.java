@@ -4,11 +4,18 @@ package pt.bamer.bamermachina;
 import android.app.Activity;
 import android.app.Application;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.util.Log;
 
 import com.androidnetworking.AndroidNetworking;
 
+import java.util.ArrayList;
+
+import pt.bamer.bamermachina.database.DBSQLite;
+import pt.bamer.bamermachina.pojos.Machina;
 import pt.bamer.bamermachina.utils.Constantes;
 import pt.bamer.bamermachina.utils.Funcoes;
 import pt.bamer.bamermachina.utils.ValoresDefeito;
@@ -18,8 +25,10 @@ public class MrApp extends Application {
     private static SharedPreferences prefs;
     private static ProgressDialog dialogoInterminavel;
     private static String maquina;
-    private static String operador;
+    private static String operadorCodigo;
     private static boolean online;
+    private static ArrayList<Machina> listaDeMachinas;
+    private static String operadorNome;
 
     public static String getMaquina() {
         return maquina;
@@ -29,12 +38,17 @@ public class MrApp extends Application {
         MrApp.maquina = maquina;
     }
 
-    public static String getOperador() {
-        return operador;
+    public static String getOperadorCodigo() {
+        return operadorCodigo;
     }
 
-    public static void setOperador(String operador) {
-        MrApp.operador = operador;
+    public static void setOperadorCodigo(String operadorCodigo, Context context) {
+        MrApp.operadorCodigo = operadorCodigo;
+        MrApp.operadorNome = new DBSQLite(context).getNomeOperador(operadorCodigo);
+    }
+
+    public static String getOperadorNome() {
+        return operadorNome;
     }
 
     public static void setOnline(boolean online) {
@@ -79,6 +93,22 @@ public class MrApp extends Application {
 
     public static String getSeccao() {
         return prefs.getString(Constantes.PREF_SECCAO, ValoresDefeito.SECCAO);
+    }
+
+    public static void setListaDeMachinas(ArrayList<Machina> listaDeMachinas) {
+        MrApp.listaDeMachinas = listaDeMachinas;
+    }
+
+    public static String getTituloBase(Context context) {
+
+        String versao = context.getString(R.string.app_name);
+        try {
+            PackageInfo pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+            versao += " " + pInfo.versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        return versao;
     }
 
     @Override

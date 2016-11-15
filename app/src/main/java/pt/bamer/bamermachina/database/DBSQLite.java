@@ -10,20 +10,24 @@ import android.util.Log;
 import java.util.ArrayList;
 
 import pt.bamer.bamermachina.MrApp;
+import pt.bamer.bamermachina.pojos.Machina;
 import pt.bamer.bamermachina.pojos.OSBI;
 import pt.bamer.bamermachina.pojos.OSBO;
 import pt.bamer.bamermachina.pojos.OSPROD;
 import pt.bamer.bamermachina.pojos.OSTIMER;
+import pt.bamer.bamermachina.pojos.Operador;
 
 public class DBSQLite extends SQLiteOpenHelper {
     private static final String TAG = DBSQLite.class.getSimpleName();
     private static final String DATABASE_NAME = "opsec";
-    private static final int DATABASE_VERSION = 9;
+    private static final int DATABASE_VERSION = 11;
 
     private static final String TABELA_OSBO = "osbo";
     private static final String TABELA_OSBI = "osbi";
     private static final String TABELA_OSPROD = "osprod";
     private static final String TABELA_OSBI_PARCIAL = "osbip";
+    private static final String TABELA_MACHINAS = "machinas";
+    private static final String TABELA_OPERADORES = "operadores";
 
     private static final String TABELA_OSTIMER = "ostimer";
     private static final String COLID = "_id";
@@ -55,6 +59,11 @@ public class DBSQLite extends SQLiteOpenHelper {
     private static final String OPERADOR = "operador";
     private static final String SECCAO = "seccao";
     private static final String NUMLINHA = "numlinha";
+    private static final String FUNCAO = "funcao";
+    private static final String NOME = "nome";
+    private static final String NO = "no";
+    private static final String CODNOME = "codnome";
+
     private static final String DATABASE_CREATE_TABLE_OSBO = "Create Table " + TABELA_OSBO + "("
             + COLID + " integer primary key autoincrement, "
             + COR + " integer not null, "
@@ -72,6 +81,7 @@ public class DBSQLite extends SQLiteOpenHelper {
             + ORDEM + " ordem not null, "
             + SECCAO + " text not null "
             + ")";
+
     private static final String DATABASE_CREATE_TABLE_OSBI = "Create Table " + TABELA_OSBI + "("
             + COLID + " integer primary key autoincrement, "
             + DESIGN + " text not null, "
@@ -123,6 +133,20 @@ public class DBSQLite extends SQLiteOpenHelper {
             + BISTAMP + " text not null, "
             + NUMLINHA + " text not null "
             + ")";
+    private static final String DATABASE_CREATE_TABLE_MACHINAS = "Create Table " + TABELA_MACHINAS + "("
+            + COLID + " integer primary key autoincrement, "
+            + REF + " text not null, "
+            + FUNCAO + " text not null, "
+            + SECCAO + " text not null, "
+            + NOME + " text not null"
+            + ")";
+    private static final String DATABASE_CREATE_TABLE_OPERADORES = "Create Table " + TABELA_OPERADORES + "("
+            + COLID + " integer primary key autoincrement, "
+            + NO + " integer not null, "
+            + CODNOME + " text not null, "
+            + SECCAO + " text not null, "
+            + NOME + " text not null"
+            + ")";
 
     public DBSQLite(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -140,6 +164,10 @@ public class DBSQLite extends SQLiteOpenHelper {
         Log.i(TAG, "A criar a tabela " + TABELA_OSPROD + " na base de dados " + DATABASE_NAME);
         db.execSQL(DATABASE_CREATE_TABLE_OSTIMER);
         Log.i(TAG, "A criar a tabela " + TABELA_OSTIMER + " na base de dados " + DATABASE_NAME);
+        db.execSQL(DATABASE_CREATE_TABLE_MACHINAS);
+        Log.i(TAG, "A criar a tabela " + TABELA_MACHINAS + " na base de dados " + DATABASE_NAME);
+        db.execSQL(DATABASE_CREATE_TABLE_OPERADORES);
+        Log.i(TAG, "A criar a tabela " + TABELA_OPERADORES + " na base de dados " + DATABASE_NAME);
     }
 
     @Override
@@ -149,7 +177,24 @@ public class DBSQLite extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + TABELA_OSBO);
         db.execSQL("DROP TABLE IF EXISTS " + TABELA_OSPROD);
         db.execSQL("DROP TABLE IF EXISTS " + TABELA_OSTIMER);
+        db.execSQL("DROP TABLE IF EXISTS " + TABELA_MACHINAS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABELA_OPERADORES);
         onCreate(db);
+    }
+
+    public void resetDados() {
+        SQLiteDatabase db = getWritableDatabase();
+        db.beginTransaction();
+        db.delete(TABELA_OPERADORES, "", null);
+        db.delete(TABELA_MACHINAS, "", null);
+        db.delete(TABELA_OSTIMER, "", null);
+        db.delete(TABELA_OSBI, "", null);
+        db.delete(TABELA_OSBI_PARCIAL, "", null);
+        db.delete(TABELA_OSBO, "", null);
+        db.delete(TABELA_OSPROD, "", null);
+        db.setTransactionSuccessful();
+        db.endTransaction();
+        db.close();
     }
 
     public void gravarOSBO(ArrayList<OSBO> listaOSBO) {
@@ -275,6 +320,28 @@ public class DBSQLite extends SQLiteOpenHelper {
         Log.d(TAG, TABELA_OSTIMER + ": foram inseridos " + listaOSTIMER.size() + " registos");
     }
 
+    public void gravarMachina(Machina machina) {
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(REF, machina.ref);
+        contentValues.put(NOME, machina.nome);
+        contentValues.put(FUNCAO, machina.funcao);
+        contentValues.put(SECCAO, machina.seccao);
+        db.insert(TABELA_MACHINAS, null, contentValues);
+        db.close();
+    }
+
+    public void gravarFuncionario(Operador operador) {
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(NO, operador.no);
+        contentValues.put(NOME, operador.nome);
+        contentValues.put(CODNOME, operador.codnome);
+        contentValues.put(SECCAO, operador.seccao);
+        db.insert(TABELA_OPERADORES, null, contentValues);
+        db.close();
+    }
+
     public int getQtdBostamp(String bostamp) {
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.query(TABELA_OSBI, new String[]{"SUM(" + QTT + ") as " + QTT}, BOSTAMP + " = ?", new String[]{bostamp}, "", "", "");
@@ -286,6 +353,7 @@ public class DBSQLite extends SQLiteOpenHelper {
         }
         cursor.close();
         db.close();
+        Log.e(TAG, "Qtd total calculada para " + bostamp + " = " + qtt);
         return qtt;
     }
 
@@ -501,5 +569,47 @@ public class DBSQLite extends SQLiteOpenHelper {
         cursor.close();
         dbr.close();
         return listaAgrupada;
+    }
+
+    public ArrayList<String> getArrayMaquinasDaSeccao(String seccao) {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.query(TABELA_MACHINAS, new String[]{REF}, SECCAO + "=?", new String[]{seccao}, "", "", REF);
+        ArrayList<String> lista = new ArrayList<>();
+        if (cursor.moveToFirst()) {
+            do {
+                String ref = cursor.getString(cursor.getColumnIndex(REF));
+                lista.add(ref);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        db.close();
+        return lista;
+    }
+
+    public ArrayList<String> getArrayFuncionariosDaSeccao(String seccao) {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.query(TABELA_OPERADORES, new String[]{CODNOME}, SECCAO + "=?", new String[]{seccao}, "", "", CODNOME);
+        ArrayList<String> lista = new ArrayList<>();
+        if (cursor.moveToFirst()) {
+            do {
+                String codenome = cursor.getString(cursor.getColumnIndex(CODNOME));
+                lista.add(codenome);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        db.close();
+        return lista;
+    }
+
+    public String getNomeOperador(String operadorCodigo) {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.query(TABELA_OPERADORES, new String[]{NOME}, CODNOME + "=?", new String[]{operadorCodigo}, "", "", "", "1");
+        String nome = "N/D";
+        if (cursor.moveToFirst()) {
+            nome = cursor.getString(cursor.getColumnIndex(NOME));
+        }
+        cursor.close();
+        db.close();
+        return nome;
     }
 }

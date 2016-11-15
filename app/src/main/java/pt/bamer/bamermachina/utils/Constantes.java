@@ -38,4 +38,7 @@ public class Constantes {
     public static final String NODE_OSPROD = "osprod";
     public static final String NODE_OSTIMER = "ostimer";
     public static final String FIELD_NUMLINHA = "posic";
+    public static final String NODE_SECCAO = "seccao";
+    public static final String NODE_MAQUINAS = "maquinas";
+    public static final String NODE_FUNCIONARIOS = "funcionarios";
 }

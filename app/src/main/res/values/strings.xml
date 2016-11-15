@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Terminal 1.0.1</string>
+    <string name="app_name">Terminal</string>
     <string name="seccao">Secção</string>
     <string name="toolbarTitle">Toolbar text</string>
     <string name="aguarde">…</string>
@@ -9,7 +9,7 @@
     <string name="continuar_upper">CONTINUAR</string>
 
     <string name="maquina">Máquina</string>
-    <string name="funcionario">Funcionário</string>
+    <string name="operadorCodigo">Operador</string>
     <string name="ok">OK</string>
     <string name="estado">Estado</string>
     <string name="reticencias">…</string>

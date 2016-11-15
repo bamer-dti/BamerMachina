@@ -61,6 +61,8 @@ public class ActivityListaOS extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.layout_listaos);
 
+        setTitle(MrApp.getTituloBase(this) + " (" + MrApp.getMaquina() + " * " + MrApp.getOperadorNome() + ")");
+
         pb_smooth = (SmoothProgressBar) findViewById(R.id.pb_smooth);
         pb_smooth.setVisibility(View.INVISIBLE);
 
@@ -161,21 +163,6 @@ public class ActivityListaOS extends AppCompatActivity {
         //FIREBASE
         FirebaseDatabase databaseref = FirebaseDatabase.getInstance();
 
-        DatabaseReference refFirebaseOSTIMER = databaseref.getReference(Constantes.NODE_OSTIMER);
-        ValueEventListener listenerFirebaseOSTIMER = new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                new TaskFirebaseOSTIMER(dataSnapshot).execute();
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        };
-        refFirebaseOSTIMER.addValueEventListener(listenerFirebaseOSTIMER);
-
-
         DatabaseReference refFirebaseOSBO = databaseref.getReference(Constantes.NODE_OSBO);
         ValueEventListener listenerFirebaseOSBO = new ValueEventListener() {
             @Override
@@ -217,6 +204,20 @@ public class ActivityListaOS extends AppCompatActivity {
             }
         };
         refFirebaseOSPROD.addValueEventListener(listenerFirebaseOSPROD);
+
+        DatabaseReference refFirebaseOSTIMER = databaseref.getReference(Constantes.NODE_OSTIMER);
+        ValueEventListener listenerFirebaseOSTIMER = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                new TaskFirebaseOSTIMER(dataSnapshot).execute();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+        refFirebaseOSTIMER.addValueEventListener(listenerFirebaseOSTIMER);
     }
 
     @Override

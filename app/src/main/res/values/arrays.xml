@@ -14,11 +14,9 @@
         <item>10 - ALUMINIOS</item>
         <item>11 - AÇOS</item>
         <item>12 - CARPINTARIA</item>
-        <item>15 - ARMAZEM</item>
     </string-array>
 
     <string-array name="array_maquina">
-        <item>mch1</item>
-        <item>mch2</item>
+        <item>TK145</item>
     </string-array>
 </resources>
