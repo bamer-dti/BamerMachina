@@ -100,7 +100,6 @@ public class MrApp extends Application {
     }
 
     public static String getTituloBase(Context context) {
-
         String versao = context.getString(R.string.app_name);
         try {
             PackageInfo pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
