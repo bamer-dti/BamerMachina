@@ -16,6 +16,7 @@ public class Constantes {
     public static final String MOSTRAR_TUDO = "TUDO";
     public static final String MOSTRAR_FILTRADO = "FILTRADO";
     public static final String PREF_MOSTRAR_TODAS_LINHAS_PROD = "pref_mostrar_todas_linhas_prod";
+    public static final String PREF_MAQUINA = "pref_machina";
 
     public static final String FIELD_DIM = "dim";
     public static final String FIELD_MK = "mk";
@@ -31,8 +32,8 @@ public class Constantes {
     public static final String FIELD_TIPO = "tipo";
     public static final String FIELD_UNIXTIME = "unixtime";
     public static final String FIELD_LASTTIME = "lasttime";
-    public static final String FIELD_SECCAO = "seccao";
 
+    public static final String FIELD_SECCAO = "seccao";
     public static final String NODE_OSBO = "osbo";
     public static final String NODE_OSBI = "osbi03";
     public static final String NODE_OSPROD = "osprod";

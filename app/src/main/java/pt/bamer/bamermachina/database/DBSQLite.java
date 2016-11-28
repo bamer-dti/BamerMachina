@@ -19,8 +19,8 @@ import pt.bamer.bamermachina.pojos.Operador;
 
 public class DBSQLite extends SQLiteOpenHelper {
     private static final String TAG = DBSQLite.class.getSimpleName();
-    private static final String DATABASE_NAME = "opsec";
-    private static final int DATABASE_VERSION = 11;
+    private static final String DATABASE_NAME = "opmachines";
+    private static final int DATABASE_VERSION = 12;
 
     private static final String TABELA_OSBO = "osbo";
     private static final String TABELA_OSBI = "osbi";
@@ -590,6 +590,7 @@ public class DBSQLite extends SQLiteOpenHelper {
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.query(TABELA_OPERADORES, new String[]{CODNOME}, SECCAO + "=?", new String[]{seccao}, "", "", CODNOME);
         ArrayList<String> lista = new ArrayList<>();
+        lista.add("");
         if (cursor.moveToFirst()) {
             do {
                 String codenome = cursor.getString(cursor.getColumnIndex(CODNOME));

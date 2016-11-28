@@ -71,7 +71,6 @@
                 android:id="@+id/spinner_maquina"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:entries="@array/array_maquina"
                 android:padding="10dp"
                 android:prompt="@string/estado"
                 android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
@@ -94,7 +93,6 @@
                 android:id="@+id/spinner_funcionario"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:entries="@array/array_funcionario"
                 android:padding="10dp"
                 android:prompt="@string/seccao"
                 android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />

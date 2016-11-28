@@ -36,6 +36,7 @@ public class MrApp extends Application {
 
     public static void setMaquina(String maquina) {
         MrApp.maquina = maquina;
+
     }
 
     public static String getOperadorCodigo() {
@@ -117,11 +118,6 @@ public class MrApp extends Application {
         prefs = getSharedPreferences(Constantes.PREFS_NAME, MODE_PRIVATE);
         Funcoes.checkFirebaseOnline();
         AndroidNetworking.initialize(getApplicationContext());
-    }
-
-    @SuppressWarnings("unused")
-    public boolean firebaseDatabaseOnline() {
-        return online;
     }
 
     @Override
