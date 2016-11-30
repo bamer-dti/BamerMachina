@@ -70,33 +70,30 @@ public class AsyncTasks {
     public static class TaskCalculoQtt extends android.os.AsyncTask<Void, Void, Void> {
 
         private final String bostamp;
-        private final TextView tv_qtt;
         private final TextView tv_qttFeita;
         private final LinearLayout ll_root;
         private final Context context;
-        private int qtt;
+        private final int pecas;
         private int qttProd;
 
-        public TaskCalculoQtt(String bostamp, TextView tv_qtt, TextView tv_qttFeita, LinearLayout ll_root) {
+        public TaskCalculoQtt(String bostamp, int pecas, TextView tv_qttFeita, LinearLayout ll_root) {
             this.bostamp = bostamp;
-            this.tv_qtt = tv_qtt;
             this.tv_qttFeita = tv_qttFeita;
             this.ll_root = ll_root;
             this.context = ll_root.getContext();
+            this.pecas = pecas;
         }
 
         @Override
         protected Void doInBackground(Void... voids) {
-            qtt = new DBSQLite(context).getQtdBostamp(bostamp);
             qttProd = new DBSQLite(context).getQtdProdBostamp(bostamp);
             return null;
         }
 
         @Override
         protected void onPostExecute(Void aVoid) {
-            tv_qtt.setText("" + qtt);
             tv_qttFeita.setText("" + (qttProd == 0 ? "" : qttProd));
-            if (qtt == qttProd) {
+            if (pecas == qttProd) {
                 ll_root.setBackgroundColor(ContextCompat.getColor(ll_root.getContext(), R.color.md_blue_grey_200));
             } else {
                 ll_root.setBackgroundColor(Color.WHITE);

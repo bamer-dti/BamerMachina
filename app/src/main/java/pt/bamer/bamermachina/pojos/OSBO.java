@@ -15,9 +15,10 @@ public class OSBO {
     public int ordem;
     public String seccao;
     public String bostamp;
+    public int pecas;
 
     public OSBO(int cor, String dtcortef, String dtcliente, String dtembala, String dtexpedi, String dttransf
-            , String estado, String fref, String nmfref, int obrano, String obs, int ordem, String seccao, String bostamp) {
+            , String estado, String fref, String nmfref, int obrano, String obs, int ordem, String seccao, String bostamp, int pecas) {
         this.cor = cor;
         this.dtcortef = dtcortef;
         this.dtcliente = dtcliente;
@@ -32,6 +33,7 @@ public class OSBO {
         this.ordem = ordem;
         this.seccao = seccao;
         this.bostamp = bostamp;
+        this.pecas = pecas;
     }
 
     public OSBO() {

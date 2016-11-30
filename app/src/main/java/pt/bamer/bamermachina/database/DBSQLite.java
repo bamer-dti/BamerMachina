@@ -20,7 +20,7 @@ import pt.bamer.bamermachina.pojos.Operador;
 public class DBSQLite extends SQLiteOpenHelper {
     private static final String TAG = DBSQLite.class.getSimpleName();
     private static final String DATABASE_NAME = "opmachines";
-    private static final int DATABASE_VERSION = 12;
+    private static final int DATABASE_VERSION = 13;
 
     private static final String TABELA_OSBO = "osbo";
     private static final String TABELA_OSBI = "osbi";
@@ -62,6 +62,8 @@ public class DBSQLite extends SQLiteOpenHelper {
     private static final String FUNCAO = "funcao";
     private static final String NOME = "nome";
     private static final String NO = "no";
+    private static final String PECAS = "pecas";
+
     private static final String CODNOME = "codnome";
 
     private static final String DATABASE_CREATE_TABLE_OSBO = "Create Table " + TABELA_OSBO + "("
@@ -79,9 +81,9 @@ public class DBSQLite extends SQLiteOpenHelper {
             + OBRANO + " integer not null, "
             + OBS + " text not null, "
             + ORDEM + " ordem not null, "
-            + SECCAO + " text not null "
+            + SECCAO + " text not null, "
+            + PECAS + " integer not null "
             + ")";
-
     private static final String DATABASE_CREATE_TABLE_OSBI = "Create Table " + TABELA_OSBI + "("
             + COLID + " integer primary key autoincrement, "
             + DESIGN + " text not null, "
@@ -217,6 +219,7 @@ public class DBSQLite extends SQLiteOpenHelper {
             contentValues.put(OBS, osbo.obs);
             contentValues.put(ORDEM, osbo.ordem);
             contentValues.put(SECCAO, osbo.seccao);
+            contentValues.put(PECAS, osbo.pecas);
             db.insert(TABELA_OSBO, null, contentValues);
         }
         db.setTransactionSuccessful();
@@ -392,7 +395,7 @@ public class DBSQLite extends SQLiteOpenHelper {
         SQLiteDatabase db = getReadableDatabase();
         ArrayList<OSBO> lista = new ArrayList<>();
         Cursor cursor = db.query(TABELA_OSBO
-                , new String[]{BOSTAMP, COR, DTCLIENTE, DTCORTEF, DTEMBALA, DTEXPEDI, DTTRANSF, ESTADO, FREF, NMFREF, OBRANO, OBS, ORDEM, SECCAO}
+                , new String[]{BOSTAMP, COR, DTCLIENTE, DTCORTEF, DTEMBALA, DTEXPEDI, DTTRANSF, ESTADO, FREF, NMFREF, OBRANO, OBS, ORDEM, SECCAO, PECAS}
                 , ""
                 , null
                 , ""
@@ -416,6 +419,7 @@ public class DBSQLite extends SQLiteOpenHelper {
                 osbo.obs = cursor.getString(cursor.getColumnIndex(OBS));
                 osbo.ordem = cursor.getInt(cursor.getColumnIndex(ORDEM));
                 osbo.seccao = cursor.getString(cursor.getColumnIndex(SECCAO));
+                osbo.pecas = cursor.getInt(cursor.getColumnIndex(PECAS));
                 lista.add(osbo);
             } while (cursor.moveToNext());
         }
@@ -449,7 +453,7 @@ public class DBSQLite extends SQLiteOpenHelper {
     public OSBO getOSBOemTrabalho() {
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursorOSBO = db.query(TABELA_OSBO,
-                new String[]{BOSTAMP, COR, DTCLIENTE, DTCORTEF, DTEMBALA, DTEXPEDI, DTTRANSF, ESTADO, FREF, NMFREF, OBRANO, OBS, ORDEM, SECCAO},
+                new String[]{BOSTAMP, COR, DTCLIENTE, DTCORTEF, DTEMBALA, DTEXPEDI, DTTRANSF, ESTADO, FREF, NMFREF, OBRANO, OBS, ORDEM, SECCAO, PECAS},
                 SECCAO + " = ? AND " + ESTADO + " = ?",
                 new String[]{MrApp.getSeccao(), MrApp.getEstado()},
                 "",
@@ -483,7 +487,8 @@ public class DBSQLite extends SQLiteOpenHelper {
                                 cursorOSBO.getString(cursorOSBO.getColumnIndex(OBS)),
                                 cursorOSBO.getInt(cursorOSBO.getColumnIndex(ORDEM)),
                                 cursorOSBO.getString(cursorOSBO.getColumnIndex(SECCAO)),
-                                cursorOSBO.getString(cursorOSBO.getColumnIndex(BOSTAMP))
+                                cursorOSBO.getString(cursorOSBO.getColumnIndex(BOSTAMP)),
+                                cursorOSBO.getInt(cursorOSBO.getColumnIndex(PECAS))
                         );
                         cursorTimer.close();
                         db.close();

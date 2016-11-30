@@ -245,7 +245,7 @@ public class TarefaRecyclerAdapter extends RecyclerView.Adapter {
             llinha = (LinearLayout) itemView.findViewById(R.id.llinha);
 
             tv_ref = (TextView) itemView.findViewById(R.id.tv_ref);
-            tv_qtt = (TextView) itemView.findViewById(R.id.tv_qtt);
+            tv_qtt = (TextView) itemView.findViewById(R.id.tv_pecas);
             tv_dim = (TextView) itemView.findViewById(R.id.tv_dim);
             tv_numlinha = (TextView) itemView.findViewById(R.id.tv_numlinha);
 

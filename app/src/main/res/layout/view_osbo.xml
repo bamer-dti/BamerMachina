@@ -127,7 +127,7 @@
                 tools:ignore="NestedWeights">
 
                 <TextView
-                    android:id="@+id/tv_qtt"
+                    android:id="@+id/tv_pecas"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"

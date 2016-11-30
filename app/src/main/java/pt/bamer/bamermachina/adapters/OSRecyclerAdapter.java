@@ -66,6 +66,7 @@ public class OSRecyclerAdapter extends RecyclerView.Adapter implements View.OnCl
         String fref = osbo.fref;
         String nmfref = osbo.nmfref;
         String obs = osbo.obs;
+        int pecas = osbo.pecas;
 
         viewHolder.tv_fref.setText(fref + " - " + nmfref);
         viewHolder.tv_fref.setTag(osbo);
@@ -76,6 +77,8 @@ public class OSRecyclerAdapter extends RecyclerView.Adapter implements View.OnCl
 
         viewHolder.tv_descricao.setText(obs);
 
+        viewHolder.tv_pecas.setText("" + pecas);
+
         DateTimeFormatter dtf = DateTimeFormat.forPattern("dd.MM.yyyy");
 
         LocalDateTime localDateTime = Funcoes.cToT(dtcortef);
@@ -84,7 +87,7 @@ public class OSRecyclerAdapter extends RecyclerView.Adapter implements View.OnCl
         localDateTime = Funcoes.cToT(dttransf);
         viewHolder.tv_dttransf.setText(dtf.print(localDateTime));
 
-        new AsyncTasks.TaskCalculoQtt(bostamp, viewHolder.tv_qtt, viewHolder.tv_qttfeita, viewHolder.ll_root).execute();
+        new AsyncTasks.TaskCalculoQtt(bostamp, pecas, viewHolder.tv_qttfeita, viewHolder.ll_root).execute();
 
         viewHolder.bt_posicao.setVisibility(View.INVISIBLE);
         if (activityListaOS != null) {
@@ -185,7 +188,7 @@ public class OSRecyclerAdapter extends RecyclerView.Adapter implements View.OnCl
         private final TextView tv_descricao;
         private final TextView tv_dtcortef;
         private final TextView tv_dttransf;
-        private final TextView tv_qtt;
+        private final TextView tv_pecas;
         private final TextView tv_qttfeita;
         private final LinearLayout ll_root;
         private final Button bt_posicao;
@@ -199,7 +202,7 @@ public class OSRecyclerAdapter extends RecyclerView.Adapter implements View.OnCl
             tv_descricao = (TextView) itemView.findViewById(R.id.tv_descricao);
             tv_dtcortef = (TextView) itemView.findViewById(R.id.tv_dtcortef);
             tv_dttransf = (TextView) itemView.findViewById(R.id.tv_dttransf);
-            tv_qtt = (TextView) itemView.findViewById(R.id.tv_qtt);
+            tv_pecas = (TextView) itemView.findViewById(R.id.tv_pecas);
             tv_qttfeita = (TextView) itemView.findViewById(R.id.tv_qttfeita);
             ll_root = (LinearLayout) itemView.findViewById(R.id.ll_root);
 
