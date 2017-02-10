@@ -6,8 +6,8 @@
     </string-array>
 
     <string-array name="array_funcionario">
-        <item>Func1</item>
-        <item>Funcionário 2</item>
+        <item>Operador1</item>
+        <item>Operador2</item>
     </string-array>
 
     <string-array name="array_seccao">

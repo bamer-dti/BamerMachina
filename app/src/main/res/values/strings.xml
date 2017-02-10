@@ -16,4 +16,8 @@
     <string name="eliminar_db">Eliminar DataBase</string>
     <string name="TOTAL">TOTAL</string>
     <string name="PARTE">PARTE</string>
+    <string name="toast_playservices_unrecoverable">necessário instalar google play services!</string>
+    <string name="service_name">firebase_sms_listener</string>
+    <string name="sms_maquina">SMS máquina</string>
+    <string name="sms_operador">SMS operador</string>
 </resources>

@@ -6,4 +6,5 @@
     <dimen name="tamanho_botao_tarefa_height">100sp</dimen>
     <dimen name="tamanho_texto_lista_os_big">22sp</dimen>
     <dimen name="tamanho_texto_lista_os_medio">18sp</dimen>
+    <dimen name="margem_texto_end">10dp</dimen>
 </resources>

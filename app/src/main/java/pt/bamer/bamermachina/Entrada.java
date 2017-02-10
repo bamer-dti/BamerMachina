@@ -12,7 +12,10 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TableLayout;
+import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -31,8 +34,8 @@ import pt.bamer.bamermachina.utils.Funcoes;
 import pt.bamer.bamermachina.utils.ValoresDefeito;
 
 public class Entrada extends AppCompatActivity {
-
     private static final String TAG = Entrada.class.getSimpleName();
+    private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     private Spinner spinn_seccao;
     private TableLayout tbl;
     private SmoothProgressBar pb_smooth;
@@ -65,7 +68,6 @@ public class Entrada extends AppCompatActivity {
         ref.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                ArrayList<Machina> listaMachinas = new ArrayList<>();
                 ArrayList<String> listaSeccao = new ArrayList<>();
                 for (DataSnapshot snapSeccao : dataSnapshot.getChildren()) {
                     String secc = snapSeccao.getKey();
@@ -80,13 +82,13 @@ public class Entrada extends AppCompatActivity {
                                 new DBSQLite(spinn_seccao.getContext()).gravarMachina(machina);
                             }
                         }
-                        if (snapMaqFunc.getKey().equals(Constantes.NODE_FUNCIONARIOS)) {
+                        if (snapMaqFunc.getKey().equals(Constantes.NODE_OPERADORES)) {
                             for (DataSnapshot snapFuncionarios : snapMaqFunc.getChildren()) {
                                 int no = Integer.parseInt(snapFuncionarios.getKey());
                                 Operador operador = snapFuncionarios.getValue(Operador.class);
                                 operador.seccao = secc;
                                 operador.no = no;
-                                new DBSQLite(spinn_seccao.getContext()).gravarFuncionario(operador);
+                                new DBSQLite(spinn_seccao.getContext()).gravarOperador(operador);
                             }
                         }
                     }
@@ -104,7 +106,6 @@ public class Entrada extends AppCompatActivity {
                 tbl.setVisibility(View.VISIBLE);
                 pb_smooth.setVisibility(View.GONE);
 
-                MrApp.setListaDeMachinas(listaMachinas);
             }
 
             @Override
@@ -127,7 +128,7 @@ public class Entrada extends AppCompatActivity {
                 SharedPreferences.Editor editor = prefs.edit();
                 editor.putString(Constantes.PREF_SECCAO, novaSeccao);
                 editor.commit();
-                Log.i(TAG, "Alterou a secção, vamos ajustar as máquinas e funcionários!");
+                Log.i(TAG, "Alterou a secção, vamos ajustar as máquinas e operadores!");
 
                 configArrayMaquinas();
                 confirArrayOperadores();
@@ -156,7 +157,7 @@ public class Entrada extends AppCompatActivity {
         });
 
 
-        final Button butok = (Button) findViewById(R.id.butok);
+        Button butok = (Button) findViewById(R.id.butok);
         butok.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -166,10 +167,12 @@ public class Entrada extends AppCompatActivity {
                     Funcoes.alerta(view.getContext(), "Secção vazia", "Não pode prosseguir sem antes indicar a secção");
                     return;
                 }
+
                 if (MrApp.getMaquina().equals("")) {
                     Funcoes.alerta(view.getContext(), "Máquina vazia", "Não pode prosseguir sem antes indicar a máquina");
                     return;
                 }
+
                 if (MrApp.getOperadorCodigo().equals("")) {
                     Funcoes.alerta(view.getContext(), "Operador vazio", "Não pode prosseguir sem antes indicar o operador");
                     return;
@@ -179,6 +182,25 @@ public class Entrada extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+        checkPlayServices();
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        System.exit(0);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
     }
 
     private void confirArrayOperadores() {
@@ -200,9 +222,20 @@ public class Entrada extends AppCompatActivity {
         spinner_maquina.setSelection(pos);
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        System.exit(0);
+    private boolean checkPlayServices() {
+        GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
+        int resultCode = apiAvailability.isGooglePlayServicesAvailable(this);
+        if (resultCode != ConnectionResult.SUCCESS) {
+            if (apiAvailability.isUserResolvableError(resultCode)) {
+                apiAvailability.getErrorDialog(this, resultCode, PLAY_SERVICES_RESOLUTION_REQUEST)
+                        .show();
+            } else {
+                Toast.makeText(this, R.string.toast_playservices_unrecoverable, Toast.LENGTH_LONG).show();
+                Log.e(TAG, "Dispositivo não suportas os serviços Google Play?!");
+                finish();
+            }
+            return false;
+        }
+        return true;
     }
 }

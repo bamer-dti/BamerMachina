@@ -1,6 +1,7 @@
 package pt.bamer.bamermachina.utils;
 
 import android.content.Context;
+import android.media.ToneGenerator;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.view.ContextThemeWrapper;
 import android.util.Log;
@@ -27,9 +28,12 @@ import java.util.Locale;
 
 import pt.bamer.bamermachina.MrApp;
 import pt.bamer.bamermachina.R;
+import pt.bamer.bamermachina.pojos.ObjSMS;
 
 @SuppressWarnings("unused")
 public class Funcoes {
+
+    private static final String TAG = Funcoes.class.getSimpleName();
 
     public static String localDateTimeToStrFull(LocalDateTime data) {
         DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
@@ -113,7 +117,6 @@ public class Funcoes {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
                 boolean connected = snapshot.getValue(Boolean.class);
-                MrApp.setOnline(connected);
                 Log.i(TAG, "FIREBAS ONLINE: " + connected);
             }
 
@@ -122,6 +125,36 @@ public class Funcoes {
                 System.err.println("Listener was cancelled");
             }
         });
+    }
+
+    public static void beep(int queSom) {
+        int tempoSom = 400;
+        switch (queSom) {
+            case Constantes.SOM_AVISO:
+                tempoSom = 200;
+                break;
+            case Constantes.SOM_ERRO:
+                tempoSom = 500;
+                break;
+
+            case Constantes.SOM_ERRO_CRITICO:
+                tempoSom = 1000;
+                break;
+
+            default:
+                break;
+        }
+        try {
+            MrApp.toneG.startTone(ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, tempoSom);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void gravarSMSFireDataBase(ObjSMS objSMS) {
+        Log.i(TAG, objSMS.toString());
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference(Constantes.TAG_SMS).child(Constantes.TAG_NAOLIDAS).child(objSMS.getDispositivo()).child(objSMS.getId());
+        ref.setValue(objSMS);
     }
 }
 

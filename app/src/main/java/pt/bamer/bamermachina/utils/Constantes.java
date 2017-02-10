@@ -4,6 +4,9 @@ public class Constantes {
     public static final String PREF_SECCAO = "pref_seccao";
     public static final String PREFS_NAME = "prefs_bameros";
 
+    public static final int SOM_AVISO = 1;
+    public static final int SOM_ERRO = 2;
+    public static final int SOM_ERRO_CRITICO = 3;
 
     public static final int MODO_STARTED = 1;
     public static final int MODO_STOPED = 2;
@@ -41,5 +44,11 @@ public class Constantes {
     public static final String FIELD_NUMLINHA = "posic";
     public static final String NODE_SECCAO = "seccao";
     public static final String NODE_MAQUINAS = "maquinas";
-    public static final String NODE_FUNCIONARIOS = "funcionarios";
+    public static final String NODE_OPERADORES = "funcionarios";
+    public static final String TAG_NAOLIDAS = "NaoLidas";
+    public static final String TAG_SMS = "sms";
+    public static final String TAG_LIDAS = "Lidas";
+    public static final int SMS_MACHINA = 1;
+    public static final int SMS_OPERADOR = 2;
+    public static final String INTENT_EXTRA_SMS = "extrasms";
 }

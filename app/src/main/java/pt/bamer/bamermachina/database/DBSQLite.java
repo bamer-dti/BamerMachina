@@ -20,7 +20,7 @@ import pt.bamer.bamermachina.pojos.Operador;
 public class DBSQLite extends SQLiteOpenHelper {
     private static final String TAG = DBSQLite.class.getSimpleName();
     private static final String DATABASE_NAME = "opmachines";
-    private static final int DATABASE_VERSION = 13;
+    private static final int DATABASE_VERSION = 17;
 
     private static final String TABELA_OSBO = "osbo";
     private static final String TABELA_OSBI = "osbi";
@@ -63,8 +63,13 @@ public class DBSQLite extends SQLiteOpenHelper {
     private static final String NOME = "nome";
     private static final String NO = "no";
     private static final String PECAS = "pecas";
-
+    private static final String CORPO = "corpo";
+    private static final String TITULO = "titulo";
+    private static final String LIDA = "lida";
     private static final String CODNOME = "codnome";
+    private static final String TEMPOSTAMP = "tempostamp";
+    private static final String DE = "de";
+    private static final String PARA = "para";
 
     private static final String DATABASE_CREATE_TABLE_OSBO = "Create Table " + TABELA_OSBO + "("
             + COLID + " integer primary key autoincrement, "
@@ -334,7 +339,7 @@ public class DBSQLite extends SQLiteOpenHelper {
         db.close();
     }
 
-    public void gravarFuncionario(Operador operador) {
+    public void gravarOperador(Operador operador) {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(NO, operador.no);

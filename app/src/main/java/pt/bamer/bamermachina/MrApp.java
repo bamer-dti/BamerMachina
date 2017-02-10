@@ -8,26 +8,29 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.media.AudioManager;
+import android.media.ToneGenerator;
 import android.util.Log;
 
 import com.androidnetworking.AndroidNetworking;
 
-import java.util.ArrayList;
-
 import pt.bamer.bamermachina.database.DBSQLite;
-import pt.bamer.bamermachina.pojos.Machina;
+import pt.bamer.bamermachina.pojos.TokenFirebase;
 import pt.bamer.bamermachina.utils.Constantes;
 import pt.bamer.bamermachina.utils.Funcoes;
 import pt.bamer.bamermachina.utils.ValoresDefeito;
 
 public class MrApp extends Application {
     private static final String TAG = MrApp.class.getSimpleName();
+    public static android.media.ToneGenerator toneG;
+    public static TokenFirebase tokenMachine;
+    public static TokenFirebase tokenUser;
+    public static int contadorSMSMachina = 0;
+    public static int contadorSMSUser = 0;
     private static SharedPreferences prefs;
     private static ProgressDialog dialogoInterminavel;
     private static String maquina;
     private static String operadorCodigo;
-    private static boolean online;
-    private static ArrayList<Machina> listaDeMachinas;
     private static String operadorNome;
 
     public static String getMaquina() {
@@ -50,10 +53,6 @@ public class MrApp extends Application {
 
     public static String getOperadorNome() {
         return operadorNome;
-    }
-
-    public static void setOnline(boolean online) {
-        MrApp.online = online;
     }
 
     public static String getEstado() {
@@ -96,10 +95,6 @@ public class MrApp extends Application {
         return prefs.getString(Constantes.PREF_SECCAO, ValoresDefeito.SECCAO);
     }
 
-    public static void setListaDeMachinas(ArrayList<Machina> listaDeMachinas) {
-        MrApp.listaDeMachinas = listaDeMachinas;
-    }
-
     public static String getTituloBase(Context context) {
         String versao = context.getString(R.string.app_name);
         try {
@@ -118,6 +113,7 @@ public class MrApp extends Application {
         prefs = getSharedPreferences(Constantes.PREFS_NAME, MODE_PRIVATE);
         Funcoes.checkFirebaseOnline();
         AndroidNetworking.initialize(getApplicationContext());
+        toneG = new ToneGenerator(AudioManager.STREAM_ALARM, 100);
     }
 
     @Override
