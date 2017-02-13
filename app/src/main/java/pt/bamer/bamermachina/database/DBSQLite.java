@@ -63,13 +63,7 @@ public class DBSQLite extends SQLiteOpenHelper {
     private static final String NOME = "nome";
     private static final String NO = "no";
     private static final String PECAS = "pecas";
-    private static final String CORPO = "corpo";
-    private static final String TITULO = "titulo";
-    private static final String LIDA = "lida";
     private static final String CODNOME = "codnome";
-    private static final String TEMPOSTAMP = "tempostamp";
-    private static final String DE = "de";
-    private static final String PARA = "para";
 
     private static final String DATABASE_CREATE_TABLE_OSBO = "Create Table " + TABELA_OSBO + "("
             + COLID + " integer primary key autoincrement, "
@@ -281,7 +275,8 @@ public class DBSQLite extends SQLiteOpenHelper {
         Log.d(TAG, TABELA_OSBI_PARCIAL + ": foram inseridos " + listaOSBI.size() + " registos");
     }
 
-    public void gravarOSPROD(ArrayList<OSPROD> listaOSPROD) {
+    public void gravarOSPROD(ArrayList<OSPROD> listaOSPROD, String origem) {
+        Log.i(TAG, "gravarOSPROD origem: " + origem);
         SQLiteDatabase db = getWritableDatabase();
         db.beginTransaction();
         db.delete(TABELA_OSPROD, "", null);
@@ -361,7 +356,7 @@ public class DBSQLite extends SQLiteOpenHelper {
         }
         cursor.close();
         db.close();
-        Log.e(TAG, "Qtd total calculada para " + bostamp + " = " + qtt);
+        Log.d(TAG, "Qtd total calculada para " + bostamp + " = " + qtt);
         return qtt;
     }
 

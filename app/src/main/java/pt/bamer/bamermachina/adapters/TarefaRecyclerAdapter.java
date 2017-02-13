@@ -1,6 +1,7 @@
 package pt.bamer.bamermachina.adapters;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
@@ -9,7 +10,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,7 +24,6 @@ import org.json.JSONException;
 import java.util.ArrayList;
 import java.util.List;
 
-import pt.bamer.bamermachina.Dossier;
 import pt.bamer.bamermachina.MrApp;
 import pt.bamer.bamermachina.R;
 import pt.bamer.bamermachina.database.DBSQLite;
@@ -36,21 +35,22 @@ import pt.bamer.bamermachina.webservices.WebServices;
 public class TarefaRecyclerAdapter extends RecyclerView.Adapter {
     @SuppressWarnings("unused")
     private static final String TAG = TarefaRecyclerAdapter.class.getSimpleName();
-    private final Dossier activityDossier;
+    private final Context context;
     private final int modoOperacional;
     private List<OSBI> listaOSBI;
 
-    public TarefaRecyclerAdapter(Dossier activityDossier, int modoOperacional) {
-        this.activityDossier = activityDossier;
+    public TarefaRecyclerAdapter(Context context, int modoOperacional) {
+        this.context = context;
         this.modoOperacional = modoOperacional;
     }
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        final View view = LayoutInflater.from(activityDossier).inflate(R.layout.view_task, parent, false);
+        final View view = LayoutInflater.from(context).inflate(R.layout.view_task, parent, false);
         return new ViewHolder(view);
     }
 
+    @SuppressLint("SetTextI18n")
     @SuppressWarnings("ConstantConditions")
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
@@ -85,7 +85,7 @@ public class TarefaRecyclerAdapter extends RecyclerView.Adapter {
                 public void onClick(View view) {
                     int qtd = osbi.qtt;
                     try {
-                        WebServices.registarQtdEmSQL(activityDossier, viewHolder, qtd, qtd, new JSONObjectQtd(bostamp, dim, mk, ref, design, qtd, osbi.numlinha));
+                        WebServices.registarQtdEmSQL(context, viewHolder, qtd, qtd, new JSONObjectQtd(bostamp, dim, mk, ref, design, qtd, osbi.numlinha));
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -101,16 +101,16 @@ public class TarefaRecyclerAdapter extends RecyclerView.Adapter {
             viewHolder.bt_parcial.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    LayoutInflater li = LayoutInflater.from(activityDossier);
+                    LayoutInflater li = LayoutInflater.from(context);
                     @SuppressLint("InflateParams")
                     View promptsView = li.inflate(R.layout.popup_qtt, null);
                     AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
-                            activityDossier);
+                            context);
                     alertDialogBuilder.setView(promptsView);
                     final EditText userInput = (EditText) promptsView.findViewById(R.id.et_qtt);
 
                     final int qttTotal = osbi.qtt;
-                    int qttParcial = new DBSQLite(activityDossier).getQtdProdBistamp(osbi);
+                    int qttParcial = new DBSQLite(context).getQtdProdBistamp(osbi);
                     final int qttRestante = qttTotal - qttParcial;
                     userInput.setHint(qttRestante + "");
                     userInput.setSelection(userInput.getText().length());
@@ -123,15 +123,15 @@ public class TarefaRecyclerAdapter extends RecyclerView.Adapter {
                                             valor = valor.equals("") ? "0" : valor;
                                             int qttEfectuada = Integer.parseInt(valor);
                                             if (qttEfectuada <= 0) {
-                                                Toast.makeText(activityDossier, "Não pode gravar quantidade inferior ou igual a zero!", Toast.LENGTH_LONG).show();
+                                                Toast.makeText(context, "Não pode gravar quantidade inferior ou igual a zero!", Toast.LENGTH_LONG).show();
                                                 return;
                                             }
                                             if (qttEfectuada > qttRestante) {
-                                                Toast.makeText(activityDossier, "Não pode gravar quantidade superior a " + qttRestante + "!", Toast.LENGTH_LONG).show();
+                                                Toast.makeText(context, "Não pode gravar quantidade superior a " + qttRestante + "!", Toast.LENGTH_LONG).show();
                                                 return;
                                             }
                                             try {
-                                                WebServices.registarQtdEmSQL(activityDossier, viewHolder, qttTotal, qttEfectuada, new JSONObjectQtd(bostamp, dim, mk, ref, design, qttEfectuada, osbi.numlinha));
+                                                WebServices.registarQtdEmSQL(context, viewHolder, qttTotal, qttEfectuada, new JSONObjectQtd(bostamp, dim, mk, ref, design, qttEfectuada, osbi.numlinha));
                                             } catch (JSONException e) {
                                                 e.printStackTrace();
                                             }
@@ -160,7 +160,6 @@ public class TarefaRecyclerAdapter extends RecyclerView.Adapter {
     @Override
     public int getItemCount() {
         int num = listaOSBI != null ? listaOSBI.size() : 0;
-        Log.i(TAG, "Nº de itens na lista OSBI = " + num);
         return num;
     }
 
@@ -189,7 +188,7 @@ public class TarefaRecyclerAdapter extends RecyclerView.Adapter {
 
     public void updateSource(ArrayList<OSBI> lista) {
         listaOSBI = lista;
-        activityDossier.runOnUiThread(new Runnable() {
+        ((Activity) context).runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 notifyDataSetChanged();
@@ -197,6 +196,7 @@ public class TarefaRecyclerAdapter extends RecyclerView.Adapter {
         });
     }
 
+    @SuppressLint("SetTextI18n")
     public void pintarObjecto(ViewHolder holder, int qttTotal, int qttParcial) {
         SharedPreferences prefs = MrApp.getPrefs();
         final boolean vertudo = prefs.getBoolean(Constantes.PREF_MOSTRAR_TODAS_LINHAS_PROD, true);
@@ -251,7 +251,7 @@ public class TarefaRecyclerAdapter extends RecyclerView.Adapter {
 
             bt_total = (Button) itemView.findViewById(R.id.bt_total);
             bt_parcial = (Button) itemView.findViewById(R.id.bt_parcial);
-            contextHolder = activityDossier;
+            contextHolder = context;
         }
     }
 
@@ -269,7 +269,7 @@ public class TarefaRecyclerAdapter extends RecyclerView.Adapter {
         @Override
         protected Void doInBackground(Void... voids) {
             qtt = osbi.qtt;
-            qttFeita = new DBSQLite(activityDossier).getQtdProdBistamp(osbi);
+            qttFeita = new DBSQLite(context).getQtdProdBistamp(osbi);
             return null;
         }
 

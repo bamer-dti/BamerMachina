@@ -1,6 +1,6 @@
 package pt.bamer.bamermachina.utils;
 
-import android.app.Activity;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
 import android.support.v4.content.ContextCompat;
@@ -11,7 +11,7 @@ import android.widget.TextView;
 
 import java.util.Timer;
 
-import pt.bamer.bamermachina.ActivityListaOS;
+import pt.bamer.bamermachina.BancadaTrabalho;
 import pt.bamer.bamermachina.R;
 import pt.bamer.bamermachina.adapters.OSRecyclerAdapter;
 import pt.bamer.bamermachina.database.DBSQLite;
@@ -28,18 +28,13 @@ public class AsyncTasks {
         private long tempoCalculado;
         private int posicaoSQL = 0;
 
-        public TaskCalcularTempo(String bostamp, OSRecyclerAdapter.ViewHolder viewHolder, Activity activity) {
+        public TaskCalcularTempo(Context context, String bostamp, OSRecyclerAdapter.ViewHolder viewHolder, BancadaTrabalho bancadaTrabalho) {
             this.bostamp = bostamp;
             this.bt_posicao = viewHolder.getBt_posicao();
             this.bt_alertas = viewHolder.getBt_alertas();
             this.tv_temporal = viewHolder.getTv_temporal();
-            ActivityListaOS oriActivity;
-            if (activity instanceof ActivityListaOS)
-                oriActivity = (ActivityListaOS) activity;
-            else
-                oriActivity = null;
-            this.timer = oriActivity == null ? null : oriActivity.getBancadaTrabalho().getCronometroOS();
-            this.context = activity;
+            this.timer = bancadaTrabalho.getCronometroOS();
+            this.context = context;
         }
 
         @Override
@@ -49,6 +44,7 @@ public class AsyncTasks {
             return null;
         }
 
+        @SuppressLint("SetTextI18n")
         @Override
         protected void onPostExecute(Void aVoid) {
             if (timer == null) {
@@ -92,7 +88,7 @@ public class AsyncTasks {
 
         @Override
         protected void onPostExecute(Void aVoid) {
-            tv_qttFeita.setText("" + (qttProd == 0 ? "" : qttProd));
+            tv_qttFeita.setText((qttProd == 0 ? "" : "" + qttProd));
             if (pecas == qttProd) {
                 ll_root.setBackgroundColor(ContextCompat.getColor(ll_root.getContext(), R.color.md_blue_grey_200));
             } else {

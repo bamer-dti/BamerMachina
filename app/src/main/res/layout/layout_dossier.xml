@@ -5,32 +5,20 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <fr.castorflex.android.smoothprogressbar.SmoothProgressBar
-        android:id="@+id/pb_smooth"
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar_frag"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:indeterminate="true"
-        app:spb_color="#FF0000"
-        app:spb_mirror_mode="false"
-        app:spb_progressiveStart_activated="true"
-        app:spb_progressiveStart_speed="1.5"
-        app:spb_progressiveStop_speed="3.4"
-        app:spb_reversed="false"
-        app:spb_sections_count="4"
-        app:spb_speed="2.0"
-        app:spb_stroke_separator_length="4dp"
-        app:spb_stroke_width="4dp" />
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:elevation="4dp"
+        android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
-    <LinearLayout
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recycler_view_dossier"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/recycler_view_dossier"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:divider="@color/md_grey_900"
-            android:dividerHeight="1px"/>
-    </LinearLayout>
+        android:layout_height="match_parent"
+        android:divider="@color/md_grey_900"
+        android:dividerHeight="1px" />
 
 </LinearLayout>

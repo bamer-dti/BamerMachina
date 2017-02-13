@@ -199,7 +199,7 @@ public class Dossier extends AppCompatActivity {
                     Log.i(TAG, "osbostamp:  " + osprod.bostamp + ", bistamp = " + osprod.bistamp + ", qtt = " + osprod.qtt);
                 }
             }
-            new DBSQLite(activity).gravarOSPROD(listaOSPROD);
+            new DBSQLite(activity).gravarOSPROD(listaOSPROD, "Método TaskFirebaseOSPROD na classe " + TAG);
             return null;
         }
 
@@ -213,4 +213,5 @@ public class Dossier extends AppCompatActivity {
             });
         }
     }
+
 }

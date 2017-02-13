@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -80,31 +79,6 @@
                 android:text="@string/opcoes_upper" />
 
         </LinearLayout>
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/sms_ll"
-        style="?android:buttonBarStyle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/sms_bt_machina"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="25dp"
-            android:text="SMS maquina: 0"
-            tools:ignore="ButtonStyle" />
-
-        <Button
-            android:id="@+id/sms_bt_user"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="25dp"
-            android:text="SMS operador: 0"
-            tools:ignore="ButtonStyle" />
     </LinearLayout>
 
     <LinearLayout

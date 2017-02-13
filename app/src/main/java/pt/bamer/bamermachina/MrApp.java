@@ -63,8 +63,8 @@ public class MrApp extends Application {
         return prefs;
     }
 
-    public static void mostrarAlertToWait(final Activity activity, final String mensagem) {
-        activity.runOnUiThread(new Runnable() {
+    public static void mostrarAlertToWait(final Context activity, final String mensagem) {
+        ((Activity) activity).runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 if (dialogoInterminavel == null) {
@@ -78,8 +78,8 @@ public class MrApp extends Application {
         });
     }
 
-    public static void esconderAlertToWait(Activity activity) {
-        activity.runOnUiThread(new Runnable() {
+    public static void esconderAlertToWait(Context activity) {
+        ((Activity) activity).runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 if (dialogoInterminavel != null) {

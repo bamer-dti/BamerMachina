@@ -1,6 +1,6 @@
 package pt.bamer.bamermachina.webservices;
 
-import android.app.Activity;
+import android.content.Context;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
@@ -13,30 +13,23 @@ import com.androidnetworking.interfaces.JSONObjectRequestListener;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import pt.bamer.bamermachina.ActivityListaOS;
+import pt.bamer.bamermachina.BancadaTrabalho;
 import pt.bamer.bamermachina.MrApp;
 import pt.bamer.bamermachina.pojos.JSONObjectQtd;
 import pt.bamer.bamermachina.pojos.JSONObjectTimer;
 import pt.bamer.bamermachina.utils.Funcoes;
 
 public class WebServices {
-        public static final String SERVER_WEBSERVICES = "http://192.168.0.1:99/bameros.svc/";
-//    public static final String SERVER_WEBSERVICES = "http://server.bamer.pt:99/bameros.svc/";
+    public static final String SERVER_WEBSERVICES = "http://192.168.0.1:99/bameros.svc/";
+    //    public static final String SERVER_WEBSERVICES = "http://server.bamer.pt:99/bameros.svc/";
     public static final String JSON_URL_REGISTAR_TEMPO = SERVER_WEBSERVICES + "registartempo";
     public static final String JSON_URL_REGISTAR_QTD = SERVER_WEBSERVICES + "registarqtd";
     private static final String TAG = WebServices.class.getSimpleName();
     private static final String JSON_OK = "ok";
     private static final String JSON_MENSAGEM = "mensagem";
 
-    public static void registarTempoemSQL(final Activity activity, final JSONObjectTimer jsonObjectTimer) {
-        final ActivityListaOS activityListaOS;
-        if (activity instanceof ActivityListaOS) {
-            activityListaOS = (ActivityListaOS) activity;
-        } else {
-            Funcoes.alerta(activity, "Erro...", "Não pode utilizar o comando registarTempoSQL porque não tem origem na Activity ActivityListaOS");
-            return;
-        }
-        MrApp.mostrarAlertToWait(activityListaOS, "A gravar no servidor, aguarde...");
+    public static void registarTempoemSQL(final Context context, final JSONObjectTimer jsonObjectTimer, final BancadaTrabalho bancadaTrabalho) {
+        MrApp.mostrarAlertToWait(context, "A gravar no servidor, aguarde...");
 
         AndroidNetworking.post(JSON_URL_REGISTAR_TEMPO)
                 .addStringBody(jsonObjectTimer.toString())
@@ -51,18 +44,18 @@ public class WebServices {
                             boolean resultado = response.getBoolean(JSON_OK);
                             String mensagem = response.getString(JSON_MENSAGEM);
                             Log.i(TAG, "code  = " + resultado + ": " + mensagem);
-                            MrApp.esconderAlertToWait(activity);
+                            MrApp.esconderAlertToWait(context);
                             if (!resultado) {
                                 Log.e(TAG, "Erro ao gravar\n" + jsonObjectTimer.toString());
-                                Funcoes.alerta(activity, "Erro", "A gravação de tempo no webservice não foi efectuada. O erro é:\n" + mensagem);
+                                Funcoes.alerta(context, "Erro", "A gravação de tempo no webservice não foi efectuada. O erro é:\n" + mensagem);
                             } else {
-                                Toast.makeText(activity, "Gravado com sucesso, aguarde um momento para actualizar informação", Toast.LENGTH_LONG).show();
+                                Toast.makeText(context, "Gravado com sucesso, aguarde um momento para actualizar informação", Toast.LENGTH_LONG).show();
 //                                MrApp.mostrarAlertToWait(activity, "A obter dados do servidor, aguarde...");
-                                activityListaOS.getBancadaTrabalho().actualizarDados();
+                                bancadaTrabalho.actualizarDados();
                             }
                         } catch (JSONException e) {
-                            MrApp.esconderAlertToWait(activity);
-                            Funcoes.alerta(activity, "Erro", "Ocorreu um erro interno no webservice.\nTente novamente. Se o erro persistir, contacte o DTI: " + e.getLocalizedMessage());
+                            MrApp.esconderAlertToWait(context);
+                            Funcoes.alerta(context, "Erro", "Ocorreu um erro interno no webservice.\nTente novamente. Se o erro persistir, contacte o DTI: " + e.getLocalizedMessage());
                             e.printStackTrace();
                         }
                     }
@@ -76,14 +69,14 @@ public class WebServices {
                         } else {
                             Log.e(TAG, "onError errorDetail : " + error.getErrorDetail());
                         }
-                        MrApp.esconderAlertToWait(activity);
-                        Funcoes.alerta(activity, "Erro", "Ocorreu um erro em <registarTempoemSQL> ao gravar via webservice.\nTente novamente. Se o erro persistir, contacte o DTI: " + error.getErrorDetail());
+                        MrApp.esconderAlertToWait(context);
+                        Funcoes.alerta(context, "Erro", "Ocorreu um erro em <registarTempoemSQL> ao gravar via webservice.\nTente novamente. Se o erro persistir, contacte o DTI: " + error.getErrorDetail());
                         Log.i(TAG, jsonObjectTimer.toString());
                     }
                 });
     }
 
-    public static void registarQtdEmSQL(final Activity activity, final Object viewOrigem, final int qtd_total, final int qtd, final JSONObjectQtd jsonObjectQtd) {
+    public static void registarQtdEmSQL(final Context activity, final Object viewOrigem, final int qtd_total, final int qtd, final JSONObjectQtd jsonObjectQtd) {
         MrApp.mostrarAlertToWait(activity, "A gravar no servidor, aguarde...");
         Log.w(TAG, "JSON OSPROD:\n" + jsonObjectQtd.toString());
 

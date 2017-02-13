@@ -85,11 +85,11 @@ public class RecyclerAdapterSMS extends FirebaseRecyclerAdapter<ObjSMS, Recycler
                         objSMS.setLidaQuem(MrApp.getOperadorCodigo());
                         objSMS.setLidastamp(System.currentTimeMillis());
                         DatabaseReference ref = FirebaseDatabase.getInstance().getReference(Constantes.TAG_SMS);
-                        if(modoSMS == Constantes.SMS_MACHINA) {
+                        if (modoSMS == Constantes.SMS_MACHINA) {
                             ref.child(Constantes.TAG_NAOLIDAS).child(MrApp.getMaquina()).child(objSMS.getId()).removeValue();
                             ref.child(Constantes.TAG_LIDAS).child(MrApp.getMaquina()).child(objSMS.getId()).setValue(objSMS);
                         }
-                        if(modoSMS == Constantes.SMS_OPERADOR) {
+                        if (modoSMS == Constantes.SMS_OPERADOR) {
                             ref.child(Constantes.TAG_NAOLIDAS).child(MrApp.getOperadorCodigo()).child(objSMS.getId()).removeValue();
                             ref.child(Constantes.TAG_LIDAS).child(MrApp.getOperadorCodigo()).child(objSMS.getId()).setValue(objSMS);
                         }
@@ -103,78 +103,4 @@ public class RecyclerAdapterSMS extends FirebaseRecyclerAdapter<ObjSMS, Recycler
             }
         }
     }
-
-//    @Override
-//    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-//        final ViewHolder viewHolder = (ViewHolder) holder;
-//        ObjSMS objSMS = lista.get(position);
-//        try {
-//            DateTime someDate = new DateTime(objSMS.getTempostamp());
-//            DateFormat formatter = new SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault());
-//            String data = formatter.format(someDate.getMillis());
-//            viewHolder.tv_data.setText(data);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//        viewHolder.tv_titulo.setText(objSMS.getTitulo());
-//        viewHolder.tv_corpo.setText(objSMS.getMensagem());
-//        viewHolder.chk_lida.setChecked(objSMS.isLida());
-//        viewHolder.chk_lida.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-//            @Override
-//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-//                int pos = viewHolder.getAdapterPosition();
-//                ObjSMS item = lista.get(pos);
-//                item.setLida(isChecked);
-//            }
-//        });
-//        if (position % 2 == 0) {
-//            viewHolder.ll_root.setBackgroundColor(ContextCompat.getColor(context, R.color.md_blue_grey_50));
-//        } else {
-//            viewHolder.ll_root.setBackgroundColor(ContextCompat.getColor(context, R.color.md_white_1000));
-//        }
-//    }
-
-//    public class ViewHolder extends RecyclerView.ViewHolder {
-//        private final TextView tv_titulo;
-//        private final TextView tv_corpo;
-//        private final CheckBox chk_lida;
-//        private final TextView tv_data;
-//        private final LinearLayout ll_root;
-//
-//        public ViewHolder(View view) {
-//            super(view);
-//            ll_root = (LinearLayout) view.findViewById(R.id.ll_root);
-//            tv_data = (TextView) view.findViewById(R.id.tv_data);
-//            tv_titulo = (TextView) view.findViewById(R.id.tv_titulo);
-//            tv_corpo = (TextView) view.findViewById(R.id.tv_corpo);
-//            chk_lida = (CheckBox) view.findViewById(R.id.chk_lida);
-//        }
-//
-//        public void popularObjecto(ObjSMS objSMS, int position) {
-//            try {
-//                DateTime someDate = new DateTime(objSMS.getTempostamp());
-//                DateFormat formatter = new SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault());
-//                String data = formatter.format(someDate.getMillis());
-//                tv_data.setText(data);
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//            tv_titulo.setText(objSMS.getTitulo());
-//            tv_corpo.setText(objSMS.getMensagem());
-//            chk_lida.setChecked(objSMS.isLida());
-//            final ObjSMS objSMSFinal = objSMS;
-//            chk_lida.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-//                @Override
-//                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-//                    objSMSFinal.setLida(isChecked);
-//                }
-//            });
-//            if (position % 2 == 0) {
-//                ll_root.setBackgroundColor(ContextCompat.getColor(context, R.color.md_blue_grey_50));
-//            } else {
-//                ll_root.setBackgroundColor(ContextCompat.getColor(context, R.color.md_white_1000));
-//            }
-//            Log.i(TAG, "A popular a posição " + position);
-//        }
-//    }
 }

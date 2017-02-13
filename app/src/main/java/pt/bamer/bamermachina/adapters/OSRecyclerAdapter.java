@@ -1,8 +1,7 @@
 package pt.bamer.bamermachina.adapters;
 
-import android.app.Activity;
+import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -22,7 +21,6 @@ import java.util.ArrayList;
 
 import pt.bamer.bamermachina.ActivityListaOS;
 import pt.bamer.bamermachina.BancadaTrabalho;
-import pt.bamer.bamermachina.Dossier;
 import pt.bamer.bamermachina.R;
 import pt.bamer.bamermachina.database.DBSQLite;
 import pt.bamer.bamermachina.pojos.JSONObjectTimer;
@@ -32,16 +30,16 @@ import pt.bamer.bamermachina.utils.Constantes;
 import pt.bamer.bamermachina.utils.Funcoes;
 import pt.bamer.bamermachina.webservices.WebServices;
 
-public class OSRecyclerAdapter extends RecyclerView.Adapter implements View.OnClickListener {
+public class OSRecyclerAdapter extends RecyclerView.Adapter {
     private static final String TAG = OSRecyclerAdapter.class.getSimpleName();
-    private final Context context;
-    private final ActivityListaOS activityListaOS;
+    private final BancadaTrabalho bancadaDeTrabalho;
+    private Context context;
     private ArrayList<OSBO> listaOSBO;
 
-    public OSRecyclerAdapter(Activity context) {
+    public OSRecyclerAdapter(Context context, BancadaTrabalho bancadaTrabalho) {
         this.context = context;
-        this.activityListaOS = (ActivityListaOS) context;
         this.listaOSBO = new ArrayList<>();
+        this.bancadaDeTrabalho = bancadaTrabalho;
     }
 
     @Override
@@ -50,6 +48,7 @@ public class OSRecyclerAdapter extends RecyclerView.Adapter implements View.OnCl
         return new ViewHolder(view);
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         ViewHolder viewHolder = (ViewHolder) holder;
@@ -62,7 +61,7 @@ public class OSRecyclerAdapter extends RecyclerView.Adapter implements View.OnCl
         final String bostamp = osbo.bostamp;
 
         String dttransf = osbo.dttransf;
-        int obrano = osbo.obrano;
+        final int obrano = osbo.obrano;
         String fref = osbo.fref;
         String nmfref = osbo.nmfref;
         String obs = osbo.obs;
@@ -70,10 +69,8 @@ public class OSRecyclerAdapter extends RecyclerView.Adapter implements View.OnCl
 
         viewHolder.tv_fref.setText(fref + " - " + nmfref);
         viewHolder.tv_fref.setTag(osbo);
-        viewHolder.tv_fref.setOnClickListener(this);
 
         viewHolder.tv_obrano.setText("OS " + obrano);
-        viewHolder.tv_obrano.setOnClickListener(this);
 
         viewHolder.tv_descricao.setText(obs);
 
@@ -90,9 +87,8 @@ public class OSRecyclerAdapter extends RecyclerView.Adapter implements View.OnCl
         new AsyncTasks.TaskCalculoQtt(bostamp, pecas, viewHolder.tv_qttfeita, viewHolder.ll_root).execute();
 
         viewHolder.bt_posicao.setVisibility(View.INVISIBLE);
-        if (activityListaOS != null) {
-            new AsyncTasks.TaskCalcularTempo(bostamp, viewHolder, activityListaOS).execute();
-        }
+
+        new AsyncTasks.TaskCalcularTempo(context, bostamp, viewHolder, bancadaDeTrabalho).execute();
 
         viewHolder.bt_posicao.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -100,7 +96,7 @@ public class OSRecyclerAdapter extends RecyclerView.Adapter implements View.OnCl
                 JSONObjectTimer jsonObject;
                 try {
                     jsonObject = new JSONObjectTimer(bostamp, "", Constantes.ESTADO_CORTE, Constantes.MODO_STARTED);
-                    WebServices.registarTempoemSQL((Activity) context, jsonObject);
+                    WebServices.registarTempoemSQL(context, jsonObject, bancadaDeTrabalho);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -116,24 +112,17 @@ public class OSRecyclerAdapter extends RecyclerView.Adapter implements View.OnCl
         });
 
         viewHolder.ll_root.setTag(bostamp);
-        viewHolder.ll_root.setOnClickListener(this);
+        viewHolder.ll_root.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ((ActivityListaOS) context).mostrarFragmentoDetalhe(v.getTag().toString(), Constantes.MODO_STOPED, obrano);
+            }
+        });
     }
 
     @Override
     public int getItemCount() {
         return listaOSBO == null ? 0 : listaOSBO.size();
-    }
-
-    @Override
-    public void onClick(View view) {
-        int viewId = view.getId();
-        if (viewId == R.id.ll_root) {
-            Intent intent = new Intent(view.getContext(), Dossier.class);
-            intent.putExtra(Constantes.INTENT_EXTRA_BOSTAMP, view.getTag().toString());
-            intent.putExtra(Constantes.INTENT_EXTRA_MODO_OPERACIONAL, Constantes.MODO_STOPED);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            context.startActivity(intent);
-        }
     }
 
     private OSBO getItem(int position) {

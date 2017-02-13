@@ -34,83 +34,6 @@
         app:spb_stroke_width="3dp" />
 
     <LinearLayout
-        android:id="@+id/ll_working_os"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/md_green_200"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:padding="20dp">
-
-        <TextView
-            android:id="@+id/tv_os"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="5dp"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="OS XXXXXX"
-            android:textSize="@dimen/tamanho_texto_lista_os_big" />
-
-        <TextView
-            android:id="@+id/tv_qtt_total"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="5dp"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="9999"
-            android:textColor="@color/md_green_900"
-            android:textSize="24sp"
-            android:textStyle="bold" />
-
-        <Button
-            android:id="@+id/bt_qtt_feita"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="9999"
-            android:textSize="20sp" />
-
-        <TextView
-            android:id="@+id/tv_tempo_total"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="5dp"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="HH:MM:SS" />
-
-        <TextView
-            android:id="@+id/tv_tempo_parcial"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="5dp"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="HH:MM:SS"
-            android:textSize="20sp" />
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <Button
-                android:id="@+id/bt_stop"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/stop_upper" />
-
-            <Button
-                android:id="@+id/bt_alerta"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/opcoes_upper" />
-
-        </LinearLayout>
-    </LinearLayout>
-
-    <LinearLayout
         android:id="@+id/sms_ll"
         style="?android:buttonBarStyle"
         android:layout_width="match_parent"
@@ -135,17 +58,8 @@
             tools:ignore="ButtonStyle" />
     </LinearLayout>
 
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
-
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/recycler_view_dossier"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:divider="@color/md_grey_900"
-            android:dividerHeight="1px" />
-    </LinearLayout>
-
+    <FrameLayout
+        android:id="@+id/frl_listaos"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 </LinearLayout>

@@ -20,4 +20,6 @@
     <string name="service_name">firebase_sms_listener</string>
     <string name="sms_maquina">SMS máquina</string>
     <string name="sms_operador">SMS operador</string>
+    <string name="fechar">fechar</string>
+    <string name="questao_clicar_novamente_fecho">toque novamente para encerrar sessão</string>
 </resources>
